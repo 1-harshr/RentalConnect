@@ -14,9 +14,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.harsh.rentalconnect.ui.theme.AppRadius
@@ -95,7 +99,7 @@ fun AddPropertyScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(Res.string.cd_back),
                             tint = OnSurface,
                         )
@@ -154,6 +158,11 @@ fun AddPropertyScreen(
                 value = propertyName,
                 onValueChange = onPropertyNameChange,
                 placeholder = "",
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next,
+                ),
             )
 
             // House number field
@@ -162,6 +171,11 @@ fun AddPropertyScreen(
                 value = houseNumber,
                 onValueChange = onHouseNumberChange,
                 placeholder = "",
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Characters,
+                    imeAction = ImeAction.Next,
+                ),
             )
 
             // Full address field
@@ -170,6 +184,11 @@ fun AddPropertyScreen(
                 value = fullAddress,
                 onValueChange = onFullAddressChange,
                 placeholder = "",
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Next,
+                ),
             )
 
             // Type field
@@ -178,6 +197,11 @@ fun AddPropertyScreen(
                 value = type,
                 onValueChange = onTypeChange,
                 placeholder = stringResource(Res.string.add_property_type_placeholder),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Done,
+                ),
             )
 
             // Availability status
@@ -249,6 +273,7 @@ private fun LabeledTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -273,6 +298,7 @@ private fun LabeledTextField(
                 }
             } else null,
             singleLine = true,
+            keyboardOptions = keyboardOptions,
             shape = RoundedCornerShape(AppSpacing.sm),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Primary,

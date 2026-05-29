@@ -2,7 +2,7 @@
 <resources>
 
     <!-- ── Onboarding ─────────────────────────────────────────────────────── -->
-    <string name="onboarding_welcome_title">Welcome to PropLink</string>
+    <string name="onboarding_welcome_title">Welcome to \nRentalConnect</string>
     <string name="onboarding_welcome_subtitle">Manage properties and connect with tenants — all in one place.</string>
     <string name="onboarding_i_am_a">I am a…</string>
     <string name="onboarding_role_owner">Property Owner</string>

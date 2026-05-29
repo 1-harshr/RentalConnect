@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -25,10 +26,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.harsh.rentalconnect.ui.theme.AppRadius
@@ -160,6 +161,10 @@ fun OnboardingScreen(
                 )
             },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Next,
+            ),
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Primary,
@@ -185,6 +190,11 @@ fun OnboardingScreen(
             value = name,
             onValueChange = onNameChange,
             singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Done,
+            ),
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Primary,
@@ -223,16 +233,14 @@ fun OnboardingScreen(
             horizontalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = OnSurfaceVariant)) {
-                        append(stringResource(Res.string.onboarding_already_have_account))
-                        append(" ")
-                    }
-                    withStyle(SpanStyle(color = Primary, fontWeight = FontWeight.SemiBold)) {
-                        append(stringResource(Res.string.onboarding_sign_in))
-                    }
-                },
+                text = stringResource(Res.string.onboarding_already_have_account) + " ",
                 style = RentalConnectTheme.typography.bodyMedium,
+                color = OnSurfaceVariant,
+            )
+            Text(
+                text = stringResource(Res.string.onboarding_sign_in),
+                style = RentalConnectTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = Primary,
                 modifier = Modifier.clickable(onClick = onSignIn),
             )
         }
