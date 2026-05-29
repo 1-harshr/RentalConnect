@@ -21,7 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -137,7 +137,7 @@ fun PropertyDetailOwnerScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(Res.string.cd_back),
                             tint = OnSurface,
                         )
@@ -300,7 +300,7 @@ fun PropertyDetailOwnerScreen(
                     label = stringResource(Res.string.property_detail_type_label),
                     value = property.type,
                 )
-                androidx.compose.material3.Divider(color = Divider, thickness = 0.5.dp)
+                androidx.compose.material3.HorizontalDivider(color = Divider, thickness = 0.5.dp)
                 InfoRow(
                     iconColor = IconTintOrange,
                     iconContent = {
@@ -309,7 +309,7 @@ fun PropertyDetailOwnerScreen(
                     label = stringResource(Res.string.property_detail_house_number_label),
                     value = property.houseNumber,
                 )
-                androidx.compose.material3.Divider(color = Divider, thickness = 0.5.dp)
+                androidx.compose.material3.HorizontalDivider(color = Divider, thickness = 0.5.dp)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -391,7 +391,7 @@ fun PropertyDetailOwnerScreen(
                         onClick = { onTenantClick(tenant.id) },
                     )
                     if (index < property.tenants.lastIndex) {
-                        androidx.compose.material3.Divider(color = Divider, thickness = 0.5.dp)
+                        androidx.compose.material3.HorizontalDivider(color = Divider, thickness = 0.5.dp)
                     }
                 }
             }
