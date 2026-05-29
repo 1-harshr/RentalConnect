@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ── Onboarding ─────────────────────────────────────────────────────── -->
+    <string name="onboarding_welcome_title">Welcome to PropLink</string>
+    <string name="onboarding_welcome_subtitle">Manage properties and connect with tenants — all in one place.</string>
+    <string name="onboarding_i_am_a">I am a…</string>
+    <string name="onboarding_role_owner">Property Owner</string>
+    <string name="onboarding_role_owner_subtitle">Manage properties and tenants</string>
+    <string name="onboarding_role_tenant">Tenant</string>
+    <string name="onboarding_role_tenant_subtitle">View my rental and owner info</string>
+    <string name="onboarding_phone_label">Phone number</string>
+    <string name="onboarding_phone_placeholder">+91 98765 XXXXX</string>
+    <string name="onboarding_name_label">Full name</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_already_have_account">Already have an account?</string>
+    <string name="onboarding_sign_in">Sign in</string>
+
+    <!-- ── Owner Home ──────────────────────────────────────────────────────── -->
+    <string name="owner_home_greeting">Good morning,</string>
+    <string name="owner_home_overview_section">OVERVIEW</string>
+    <string name="owner_home_stat_properties">Properties</string>
+    <string name="owner_home_stat_tenants">Tenants</string>
+    <string name="owner_home_stat_vacant">Vacant</string>
+    <string name="owner_home_properties_section">MY PROPERTIES</string>
+    <string name="owner_home_see_all">See all</string>
+
+    <!-- ── Property Detail (Owner) ────────────────────────────────────────── -->
+    <string name="property_detail_edit">Edit</string>
+    <string name="property_detail_type_label">Type</string>
+    <string name="property_detail_house_number_label">House Number</string>
+    <string name="property_detail_map_label">Map Location</string>
+    <string name="property_detail_view_on_map">View on map</string>
+    <string name="property_detail_add_tenant">+ Add</string>
+
+    <!-- ── Tenant Profile ─────────────────────────────────────────────────── -->
+    <string name="tenant_profile_title">Tenant Profile</string>
+    <string name="tenant_profile_remove">Remove</string>
+    <string name="tenant_profile_phone_label">Phone</string>
+    <string name="tenant_profile_hometown_label">Hometown</string>
+    <string name="tenant_profile_aadhar_label">Aadhar ID</string>
+    <string name="tenant_profile_since_label">Tenant since</string>
+    <string name="tenant_profile_assigned_section">ASSIGNED PROPERTY</string>
+    <string name="tenant_profile_call_button">Call Tenant</string>
+    <string name="tenant_profile_remove_button">Remove Tenant</string>
+
+    <!-- ── Add Property ───────────────────────────────────────────────────── -->
+    <string name="add_property_title">Add Property</string>
+    <string name="add_property_save">Save</string>
+    <string name="add_property_add_photos">Add photos</string>
+    <string name="add_property_name_label">Property name</string>
+    <string name="add_property_house_number_label">House number</string>
+    <string name="add_property_address_label">Full address</string>
+    <string name="add_property_type_label">Type</string>
+    <string name="add_property_type_placeholder">2BHK</string>
+    <string name="add_property_availability_label">Availability status</string>
+    <string name="add_property_map_label">Map location</string>
+    <string name="add_property_tap_to_pin">Tap to pin location</string>
+
+    <!-- ── Tenant Home ────────────────────────────────────────────────────── -->
+    <string name="tenant_home_greeting">Welcome back,</string>
+    <string name="tenant_home_property_section">MY PROPERTY</string>
+    <string name="tenant_home_your_home_badge">Your home</string>
+    <string name="tenant_home_view_details">View details</string>
+    <string name="tenant_home_owner_section">MY OWNER</string>
+    <string name="tenant_home_owner_role">Property Owner</string>
+    <string name="tenant_home_call_button">Call</string>
+    <string name="tenant_home_message_button">Message</string>
+
+    <!-- ── Property Detail (Tenant) ───────────────────────────────────────── -->
+    <string name="property_detail_tenant_title">Property Details</string>
+    <string name="property_detail_tenant_your_home">Your home</string>
+    <string name="property_detail_tenant_view_map">View on Google Maps</string>
+    <string name="property_detail_tenant_owner_section">YOUR OWNER</string>
+    <string name="property_detail_tenant_contact">Contact</string>
+    <string name="property_detail_tenant_image_placeholder">Property Images</string>
+
+    <!-- ── Shared status badges ───────────────────────────────────────────── -->
+    <string name="status_occupied">Occupied</string>
+    <string name="status_vacant">Vacant</string>
+
+    <!-- ── Bottom navigation ──────────────────────────────────────────────── -->
+    <string name="nav_home">Home</string>
+    <string name="nav_properties">Properties</string>
+    <string name="nav_tenants">Tenants</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_property">Property</string>
+
+    <!-- ── Content descriptions ───────────────────────────────────────────── -->
+    <string name="cd_back">Back</string>
+    <string name="cd_avatar">User avatar</string>
+
+</resources>
