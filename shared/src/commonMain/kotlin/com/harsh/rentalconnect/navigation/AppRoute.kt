@@ -8,6 +8,9 @@ sealed interface AppRoute {
     @Serializable
     data object Onboarding : AppRoute
 
+    @Serializable
+    data object SignIn : AppRoute
+
     // ── Owner flow ────────────────────────────────────────────────────────────
     @Serializable
     data object OwnerHome : AppRoute

@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -32,10 +32,13 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.harsh.rentalconnect.domain.model.ValidationError
+import com.harsh.rentalconnect.ui.models.Role
 import com.harsh.rentalconnect.ui.theme.AppRadius
 import com.harsh.rentalconnect.ui.theme.AppSize
 import com.harsh.rentalconnect.ui.theme.AppSpacing
 import com.harsh.rentalconnect.ui.theme.Background
+import com.harsh.rentalconnect.ui.theme.Error
 import com.harsh.rentalconnect.ui.theme.OnSurface
 import com.harsh.rentalconnect.ui.theme.OnSurfaceVariant
 import com.harsh.rentalconnect.ui.theme.OutlineSubtle
@@ -47,6 +50,12 @@ import com.harsh.rentalconnect.ui.theme.Surface
 import com.harsh.rentalconnect.ui.theme.SurfaceMuted
 import org.jetbrains.compose.resources.stringResource
 import rentalconnect.shared.generated.resources.Res
+import rentalconnect.shared.generated.resources.error_name_empty
+import rentalconnect.shared.generated.resources.error_name_invalid_format
+import rentalconnect.shared.generated.resources.error_name_too_long
+import rentalconnect.shared.generated.resources.error_name_too_short
+import rentalconnect.shared.generated.resources.error_phone_empty
+import rentalconnect.shared.generated.resources.error_phone_invalid_format
 import rentalconnect.shared.generated.resources.onboarding_already_have_account
 import rentalconnect.shared.generated.resources.onboarding_continue
 import rentalconnect.shared.generated.resources.onboarding_i_am_a
@@ -63,12 +72,15 @@ import rentalconnect.shared.generated.resources.onboarding_welcome_title
 
 @Composable
 fun OnboardingScreen(
-    selectedRole: String,
-    onRoleSelected: (String) -> Unit,
+    selectedRole: Role,
+    onRoleSelected: (Role) -> Unit,
     phone: String,
     onPhoneChange: (String) -> Unit,
+    phoneError: ValidationError? = null,
     name: String,
     onNameChange: (String) -> Unit,
+    nameError: ValidationError? = null,
+    canContinue: Boolean = true,
     onContinue: () -> Unit,
     onSignIn: () -> Unit,
 ) {
@@ -91,7 +103,6 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(AppSpacing.xxl))
 
-        // Title
         Text(
             text = stringResource(Res.string.onboarding_welcome_title),
             style = RentalConnectTheme.typography.headlineLarge,
@@ -100,7 +111,6 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(AppSpacing.sm))
 
-        // Subtitle
         Text(
             text = stringResource(Res.string.onboarding_welcome_subtitle),
             style = RentalConnectTheme.typography.bodyLarge,
@@ -109,7 +119,6 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(AppSpacing.xxxl))
 
-        // Role section label
         Text(
             text = stringResource(Res.string.onboarding_i_am_a),
             style = RentalConnectTheme.typography.titleMedium,
@@ -118,7 +127,6 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(AppSpacing.md))
 
-        // Role cards row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.md),
@@ -126,40 +134,35 @@ fun OnboardingScreen(
             RoleCard(
                 label = stringResource(Res.string.onboarding_role_owner),
                 subtitle = stringResource(Res.string.onboarding_role_owner_subtitle),
-                isSelected = selectedRole == "owner",
-                onSelect = { onRoleSelected("owner") },
+                isSelected = selectedRole == Role.Owner,
+                onSelect = { onRoleSelected(Role.Owner) },
                 modifier = Modifier.weight(1f),
             )
-
             RoleCard(
                 label = stringResource(Res.string.onboarding_role_tenant),
                 subtitle = stringResource(Res.string.onboarding_role_tenant_subtitle),
-                isSelected = selectedRole == "tenant",
-                onSelect = { onRoleSelected("tenant") },
+                isSelected = selectedRole == Role.Tenant,
+                onSelect = { onRoleSelected(Role.Tenant) },
                 modifier = Modifier.weight(1f),
             )
         }
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Phone number field
+        // ── Phone field ───────────────────────────────────────────────────────
         Text(
             text = stringResource(Res.string.onboarding_phone_label),
             style = RentalConnectTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
             color = OnSurface,
         )
-
         Spacer(modifier = Modifier.height(6.dp))
-
         OutlinedTextField(
             value = phone,
             onValueChange = onPhoneChange,
             placeholder = {
-                Text(
-                    text = stringResource(Res.string.onboarding_phone_placeholder),
-                    color = OnSurfaceVariant,
-                )
+                Text(text = stringResource(Res.string.onboarding_phone_placeholder), color = OnSurfaceVariant)
             },
+            isError = phoneError != null,
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Phone,
@@ -169,26 +172,35 @@ fun OnboardingScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Primary,
                 unfocusedBorderColor = OutlineSubtle,
+                errorBorderColor = Error,
                 focusedContainerColor = Surface,
                 unfocusedContainerColor = Surface,
+                errorContainerColor = Surface,
             ),
             modifier = Modifier.fillMaxWidth(),
         )
+        if (phoneError != null) {
+            Text(
+                text = phoneErrorMessage(phoneError),
+                color = Error,
+                style = RentalConnectTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = AppSpacing.sm, top = 4.dp),
+            )
+        }
 
         Spacer(modifier = Modifier.height(AppSpacing.xl))
 
-        // Full name field
+        // ── Name field ────────────────────────────────────────────────────────
         Text(
             text = stringResource(Res.string.onboarding_name_label),
             style = RentalConnectTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
             color = OnSurface,
         )
-
         Spacer(modifier = Modifier.height(6.dp))
-
         OutlinedTextField(
             value = name,
             onValueChange = onNameChange,
+            isError = nameError != null,
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
@@ -199,21 +211,34 @@ fun OnboardingScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Primary,
                 unfocusedBorderColor = OutlineSubtle,
+                errorBorderColor = Error,
                 focusedContainerColor = Surface,
                 unfocusedContainerColor = Surface,
+                errorContainerColor = Surface,
             ),
             modifier = Modifier.fillMaxWidth(),
         )
+        if (nameError != null) {
+            Text(
+                text = nameErrorMessage(nameError),
+                color = Error,
+                style = RentalConnectTheme.typography.bodySmall,
+                modifier = Modifier.padding(start = AppSpacing.sm, top = 4.dp),
+            )
+        }
 
         Spacer(modifier = Modifier.height(AppSpacing.xxxl))
 
-        // Continue button
+        // ── Continue button ───────────────────────────────────────────────────
         Button(
             onClick = onContinue,
+            enabled = canContinue,
             shape = RoundedCornerShape(AppRadius.md),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Primary,
                 contentColor = Color.White,
+                disabledContainerColor = Primary.copy(alpha = 0.4f),
+                disabledContentColor = Color.White.copy(alpha = 0.7f),
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -227,7 +252,7 @@ fun OnboardingScreen(
 
         Spacer(modifier = Modifier.height(AppSpacing.xxl))
 
-        // Sign in footer
+        // ── Sign in footer ────────────────────────────────────────────────────
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
@@ -248,6 +273,22 @@ fun OnboardingScreen(
 }
 
 @Composable
+private fun nameErrorMessage(error: ValidationError): String = when (error) {
+    ValidationError.EMPTY -> stringResource(Res.string.error_name_empty)
+    ValidationError.TOO_SHORT -> stringResource(Res.string.error_name_too_short)
+    ValidationError.TOO_LONG -> stringResource(Res.string.error_name_too_long)
+    ValidationError.INVALID_FORMAT -> stringResource(Res.string.error_name_invalid_format)
+}
+
+@Composable
+private fun phoneErrorMessage(error: ValidationError): String = when (error) {
+    ValidationError.EMPTY -> stringResource(Res.string.error_phone_empty)
+    ValidationError.TOO_SHORT,
+    ValidationError.TOO_LONG,
+    ValidationError.INVALID_FORMAT -> stringResource(Res.string.error_phone_invalid_format)
+}
+
+@Composable
 private fun RoleCard(
     label: String,
     subtitle: String,
@@ -262,37 +303,20 @@ private fun RoleCard(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(AppRadius.md))
-            .border(
-                width = borderWidth,
-                color = borderColor,
-                shape = RoundedCornerShape(AppRadius.md),
-            )
+            .border(width = borderWidth, color = borderColor, shape = RoundedCornerShape(AppRadius.md))
             .background(backgroundColor)
             .clickable(onClick = onSelect)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
     ) {
-        // Icon placeholder box
         Box(
             modifier = Modifier
                 .size(36.dp)
                 .clip(RoundedCornerShape(AppRadius.sm))
-                .background(
-                    if (isSelected) PrimarySubtle else SurfaceMuted,
-                ),
+                .background(if (isSelected) PrimarySubtle else SurfaceMuted),
         )
-
-        Text(
-            text = label,
-            style = RentalConnectTheme.typography.titleMedium,
-            color = OnSurface,
-        )
-
-        Text(
-            text = subtitle,
-            style = RentalConnectTheme.typography.bodyMedium,
-            color = OnSurfaceVariant,
-        )
+        Text(text = label, style = RentalConnectTheme.typography.titleMedium, color = OnSurface)
+        Text(text = subtitle, style = RentalConnectTheme.typography.bodyMedium, color = OnSurfaceVariant)
     }
 }
 
@@ -301,12 +325,15 @@ private fun RoleCard(
 fun OnboardingScreenPreview() {
     RentalConnectTheme {
         OnboardingScreen(
-            selectedRole = "owner",
+            selectedRole = Role.Owner,
             onRoleSelected = {},
-            phone = "",
+            phone = "123",
             onPhoneChange = {},
-            name = "Rajesh Kumar",
+            phoneError = ValidationError.INVALID_FORMAT,
+            name = "",
             onNameChange = {},
+            nameError = ValidationError.EMPTY,
+            canContinue = false,
             onContinue = {},
             onSignIn = {},
         )

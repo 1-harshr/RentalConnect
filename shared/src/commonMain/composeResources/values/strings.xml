@@ -90,4 +90,16 @@
     <string name="cd_back">Back</string>
     <string name="cd_avatar">User avatar</string>
 
+    <!-- ── Validation errors ─────────────────────────────────────────────── -->
+    <string name="error_name_empty">Name is required</string>
+    <string name="error_name_too_short">Name must be at least 2 characters</string>
+    <string name="error_name_too_long">Name cannot exceed 50 characters</string>
+    <string name="error_name_invalid_format">Name can only contain letters, spaces, and . \' -</string>
+    <string name="error_phone_empty">Phone number is required</string>
+    <string name="error_phone_invalid_format">Enter a valid 10-digit phone number</string>
+
+    <!-- ── Generic error ─────────────────────────────────────────────────── -->
+    <string name="error_generic_message">Something went wrong. Please try again.</string>
+    <string name="error_retry">Retry</string>
+
 </resources>
