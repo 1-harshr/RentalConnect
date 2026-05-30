@@ -121,6 +121,8 @@
     <string name="error_password_empty">Password is required</string>
     <string name="error_password_short">Password must be at least 8 characters</string>
     <string name="error_confirm_password_mismatch">Passwords do not match</string>
+    <string name="error_aadhar_required">Aadhar ID is required</string>
+    <string name="error_aadhar_invalid">Enter a valid 12-digit Aadhar ID</string>
 
     <!-- ── Generic error ─────────────────────────────────────────────────── -->
     <string name="error_generic_message">Something went wrong. Please try again.</string>

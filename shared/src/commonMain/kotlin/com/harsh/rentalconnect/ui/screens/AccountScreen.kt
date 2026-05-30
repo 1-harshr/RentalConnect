@@ -57,6 +57,8 @@ import rentalconnect.shared.generated.resources.account_role_tenant
 import rentalconnect.shared.generated.resources.account_save
 import rentalconnect.shared.generated.resources.account_sign_out
 import rentalconnect.shared.generated.resources.account_title
+import rentalconnect.shared.generated.resources.error_aadhar_invalid
+import rentalconnect.shared.generated.resources.error_aadhar_required
 import rentalconnect.shared.generated.resources.error_backend_unavailable
 import rentalconnect.shared.generated.resources.error_generic_message
 import rentalconnect.shared.generated.resources.error_generic_required
@@ -287,11 +289,12 @@ private fun hometownErrorMessage(error: ValidationError?): String? = when (error
     null -> null
 }
 
+@Composable
 private fun aadharErrorMessage(error: AuthValidationError?): String? = when (error) {
-    AuthValidationError.EMPTY -> "Aadhar ID is required"
+    AuthValidationError.EMPTY -> stringResource(Res.string.error_aadhar_required)
     AuthValidationError.INVALID_FORMAT,
     AuthValidationError.MISMATCH,
-    AuthValidationError.TOO_SHORT -> "Enter a valid 12-digit Aadhar ID"
+    AuthValidationError.TOO_SHORT -> stringResource(Res.string.error_aadhar_invalid)
     null -> null
 }
 

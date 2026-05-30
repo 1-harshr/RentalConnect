@@ -74,6 +74,8 @@ import com.harsh.rentalconnect.ui.theme.Surface
 import com.harsh.rentalconnect.ui.theme.SurfaceMuted
 import org.jetbrains.compose.resources.stringResource
 import rentalconnect.shared.generated.resources.Res
+import rentalconnect.shared.generated.resources.error_aadhar_invalid
+import rentalconnect.shared.generated.resources.error_aadhar_required
 import rentalconnect.shared.generated.resources.error_backend_unavailable
 import rentalconnect.shared.generated.resources.error_confirm_password_mismatch
 import rentalconnect.shared.generated.resources.error_email_empty
@@ -506,10 +508,10 @@ private fun confirmPasswordValidationErrorMessage(error: AuthValidationError): S
 
 @Composable
 private fun aadharValidationErrorMessage(error: AuthValidationError): String = when (error) {
-    AuthValidationError.EMPTY -> "Aadhar ID is required"
-    AuthValidationError.INVALID_FORMAT -> "Enter a valid 12-digit Aadhar ID"
+    AuthValidationError.EMPTY -> stringResource(Res.string.error_aadhar_required)
+    AuthValidationError.INVALID_FORMAT,
     AuthValidationError.TOO_SHORT,
-    AuthValidationError.MISMATCH -> "Enter a valid 12-digit Aadhar ID"
+    AuthValidationError.MISMATCH -> stringResource(Res.string.error_aadhar_invalid)
 }
 
 @Composable
