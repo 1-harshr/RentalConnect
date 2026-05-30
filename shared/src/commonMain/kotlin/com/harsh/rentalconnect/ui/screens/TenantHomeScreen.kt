@@ -18,6 +18,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -29,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import com.harsh.rentalconnect.ui.components.NavItem
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.harsh.rentalconnect.ui.models.TenantPropertyInfo
@@ -258,26 +268,36 @@ private fun TenantBottomNavigation(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
 ) {
-    val labels = listOf(
-        stringResource(Res.string.nav_home),
-        stringResource(Res.string.nav_property),
-        stringResource(Res.string.nav_profile),
+    val navItems = listOf(
+        NavItem(stringResource(Res.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
+        NavItem(stringResource(Res.string.nav_property), Icons.Filled.LocationOn, Icons.Outlined.LocationOn),
+        NavItem(stringResource(Res.string.nav_profile), Icons.Filled.AccountCircle, Icons.Outlined.AccountCircle),
     )
 
-    NavigationBar(containerColor = Surface) {
-        labels.forEachIndexed { index, label ->
+    NavigationBar(
+        containerColor = Surface,
+        tonalElevation = 0.dp,
+    ) {
+        navItems.forEachIndexed { index, item ->
+            val selected = index == selectedTab
             NavigationBarItem(
-                selected = selectedTab == index,
+                selected = selected,
                 onClick = { onTabSelected(index) },
                 icon = {
-                    Box(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                            .background(if (selectedTab == index) Primary else Color.Transparent),
+                    Icon(
+                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp),
                     )
                 },
-                label = { Text(label, fontSize = 11.sp) },
+                label = {
+                    Text(
+                        text = item.label,
+                        style = RentalConnectTheme.typography.labelMedium.copy(
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                        ),
+                    )
+                },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.White,
                     selectedTextColor = Primary,

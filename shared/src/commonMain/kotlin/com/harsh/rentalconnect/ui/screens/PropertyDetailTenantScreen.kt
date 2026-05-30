@@ -23,6 +23,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,7 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import com.harsh.rentalconnect.ui.components.NavItem
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -259,11 +267,13 @@ fun PropertyDetailTenantScreen(
             ) {
                 InfoRow(
                     iconColor = PrimaryMid,
+                    icon = Icons.Outlined.Home,
                     labelText = stringResource(Res.string.property_detail_type_label),
                     valueText = property.type,
                 )
                 InfoRow(
                     iconColor = IconTintGreen,
+                    icon = Icons.Outlined.LocationOn,
                     labelText = stringResource(Res.string.property_detail_house_number_label),
                     valueText = property.houseNumber,
                 )
@@ -385,19 +395,27 @@ private fun PropertyChip(
 @Composable
 private fun InfoRow(
     iconColor: Color,
+    icon: ImageVector,
     labelText: String,
     valueText: String,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Colored square icon box
         Box(
             modifier = Modifier
                 .size(AppSize.avatarSm)
                 .clip(RoundedCornerShape(AppRadius.sm))
                 .background(iconColor),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp),
+            )
+        }
 
         Spacer(modifier = Modifier.width(AppSpacing.md))
 
@@ -422,39 +440,38 @@ private fun BottomNavBar(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
 ) {
+    val navItems = listOf(
+        NavItem(stringResource(Res.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
+        NavItem(stringResource(Res.string.nav_property), Icons.Filled.LocationOn, Icons.Outlined.LocationOn),
+        NavItem(stringResource(Res.string.nav_profile), Icons.Filled.AccountCircle, Icons.Outlined.AccountCircle),
+    )
+
     NavigationBar(
         containerColor = Surface,
         tonalElevation = 0.dp,
     ) {
-        val tabs = listOf(
-            stringResource(Res.string.nav_home),
-            stringResource(Res.string.nav_property),
-            stringResource(Res.string.nav_profile),
-        )
-
-        tabs.forEachIndexed { index, label ->
+        navItems.forEachIndexed { index, item ->
+            val selected = selectedTab == index
             NavigationBarItem(
-                selected = selectedTab == index,
+                selected = selected,
                 onClick = { onTabSelected(index) },
                 icon = {
-                    // Icon placeholder boxes
-                    Box(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(
-                                if (selectedTab == index) Primary else OutlineSubtle,
-                            ),
+                    Icon(
+                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp),
                     )
                 },
                 label = {
                     Text(
-                        text = label,
+                        text = item.label,
                         style = RentalConnectTheme.typography.labelSmall,
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Primary,
                     selectedTextColor = Primary,
+                    unselectedIconColor = OnSurfaceVariant,
                     unselectedTextColor = OnSurfaceVariant,
                     indicatorColor = Color.Transparent,
                 ),
