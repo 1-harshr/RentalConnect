@@ -387,6 +387,8 @@ private fun OwnerNavGraph(
             AddTenantScreen(
                 phone = uiState.phone,
                 phoneError = uiState.phoneError,
+                selectedCountryCode = uiState.selectedCountryCode,
+                onCountryCodeChange = viewModel::onCountryCodeChange,
                 candidate = uiState.candidate,
                 searchError = uiState.searchError,
                 isSearching = uiState.isSearching,
