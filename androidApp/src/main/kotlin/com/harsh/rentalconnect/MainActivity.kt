@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.harsh.rentalconnect.config.SupabaseConfigHolder
 import com.harsh.rentalconnect.platform.AndroidContextHolder
 
 class MainActivity : ComponentActivity() {
@@ -13,6 +14,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AndroidContextHolder.context = applicationContext
+        SupabaseConfigHolder.url = BuildConfig.SUPABASE_URL
+        SupabaseConfigHolder.anonKey = BuildConfig.SUPABASE_ANON_KEY
 
         setContent {
             App()

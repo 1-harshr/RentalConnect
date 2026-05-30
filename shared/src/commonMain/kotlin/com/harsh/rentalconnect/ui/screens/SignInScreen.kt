@@ -72,8 +72,6 @@ import rentalconnect.shared.generated.resources.error_phone_in_use
 import rentalconnect.shared.generated.resources.sign_in_action
 import rentalconnect.shared.generated.resources.sign_in_create_action
 import rentalconnect.shared.generated.resources.sign_in_create_prompt
-import rentalconnect.shared.generated.resources.sign_in_demo_owner
-import rentalconnect.shared.generated.resources.sign_in_demo_tenant
 import rentalconnect.shared.generated.resources.sign_in_email_label
 import rentalconnect.shared.generated.resources.sign_in_password_label
 import rentalconnect.shared.generated.resources.sign_in_submitting
@@ -250,19 +248,6 @@ fun SignInScreen(
                 style = RentalConnectTheme.typography.titleMedium,
             )
         }
-
-        Spacer(modifier = Modifier.height(AppSpacing.lg))
-        Text(
-            text = stringResource(Res.string.sign_in_demo_owner),
-            style = RentalConnectTheme.typography.bodySmall,
-            color = OnSurfaceVariant,
-        )
-        Text(
-            text = stringResource(Res.string.sign_in_demo_tenant),
-            style = RentalConnectTheme.typography.bodySmall,
-            color = OnSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp),
-        )
 
         Spacer(modifier = Modifier.height(AppSpacing.xxl))
 

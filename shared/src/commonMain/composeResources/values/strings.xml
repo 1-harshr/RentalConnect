@@ -141,9 +141,6 @@
     <string name="sign_in_submitting">Signing in...</string>
     <string name="sign_in_create_prompt">Don&#39;t have an account?</string>
     <string name="sign_in_create_action">Create one</string>
-    <string name="sign_in_demo_owner">Demo owner: owner@rentalconnect.app / Owner@123</string>
-    <string name="sign_in_demo_tenant">Demo tenant: tenant@rentalconnect.app / Tenant@123</string>
-
     <!-- ── Empty and account states ──────────────────────────────────────── -->
     <string name="empty_owner_title">No properties yet</string>
     <string name="empty_owner_body">Add your first property to start managing homes and tenants.</string>

@@ -9,3 +9,10 @@ data class SupabaseRuntimeConfig(
 }
 
 expect fun loadSupabaseRuntimeConfig(): SupabaseRuntimeConfig
+
+// Populated by the host app before the first loadSupabaseRuntimeConfig() call.
+// Android: MainActivity writes BuildConfig values here at startup.
+object SupabaseConfigHolder {
+    var url: String = ""
+    var anonKey: String = ""
+}
