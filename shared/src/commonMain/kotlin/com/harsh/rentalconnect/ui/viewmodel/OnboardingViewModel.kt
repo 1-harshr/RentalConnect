@@ -14,6 +14,8 @@ import com.harsh.rentalconnect.domain.usecase.ValidateEmailUseCase
 import com.harsh.rentalconnect.domain.usecase.ValidateNameUseCase
 import com.harsh.rentalconnect.domain.usecase.ValidatePasswordUseCase
 import com.harsh.rentalconnect.domain.usecase.ValidatePhoneUseCase
+import com.harsh.rentalconnect.ui.components.CountryCode
+import com.harsh.rentalconnect.ui.components.countryCodes
 import com.harsh.rentalconnect.ui.models.Role
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +26,7 @@ import kotlinx.coroutines.launch
 data class OnboardingUiState(
     val name: String = "",
     val phone: String = "",
+    val selectedCountryCode: CountryCode = countryCodes.first(),
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
@@ -75,8 +78,16 @@ class OnboardingViewModel(
     }
 
     fun onPhoneChange(phone: String) {
-        val error = if (phone.isNotEmpty()) (validatePhone(phone) as? ValidationResult.Invalid)?.error else null
+        val dialCode = _uiState.value.selectedCountryCode.dialCode
+        val error = if (phone.isNotEmpty()) (validatePhone(phone, dialCode) as? ValidationResult.Invalid)?.error else null
         _uiState.update { it.copy(phone = phone, phoneError = error, authError = null) }
+    }
+
+    fun onCountryCodeChange(countryCode: CountryCode) {
+        val error = if (_uiState.value.phone.isNotEmpty()) {
+            (validatePhone(_uiState.value.phone, countryCode.dialCode) as? ValidationResult.Invalid)?.error
+        } else null
+        _uiState.update { it.copy(selectedCountryCode = countryCode, phoneError = error, authError = null) }
     }
 
     fun onEmailChange(email: String) {
@@ -133,7 +144,7 @@ class OnboardingViewModel(
 
     fun submit() {
         val nameError = (validateName(_uiState.value.name) as? ValidationResult.Invalid)?.error
-        val phoneError = (validatePhone(_uiState.value.phone) as? ValidationResult.Invalid)?.error
+        val phoneError = (validatePhone(_uiState.value.phone, _uiState.value.selectedCountryCode.dialCode) as? ValidationResult.Invalid)?.error
         val emailError = validateEmail(_uiState.value.email)
         val passwordError = validatePassword(_uiState.value.password)
         val confirmPasswordError = confirmPasswordError(_uiState.value.password, _uiState.value.confirmPassword)
@@ -168,7 +179,7 @@ class OnboardingViewModel(
                     SignUpRequest(
                         name = state.name,
                         email = state.email,
-                        phone = state.phone,
+                        phone = "${state.selectedCountryCode.dialCode}${state.phone}",
                         hometown = state.hometown,
                         aadharId = state.aadharId,
                         password = state.password,

@@ -89,6 +89,8 @@ private fun AuthNavGraph(
                 phone = uiState.phone,
                 onPhoneChange = viewModel::onPhoneChange,
                 phoneError = uiState.phoneError,
+                selectedCountryCode = uiState.selectedCountryCode,
+                onCountryCodeChange = viewModel::onCountryCodeChange,
                 name = uiState.name,
                 onNameChange = viewModel::onNameChange,
                 nameError = uiState.nameError,

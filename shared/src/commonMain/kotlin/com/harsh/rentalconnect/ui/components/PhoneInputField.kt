@@ -37,19 +37,19 @@ import com.harsh.rentalconnect.ui.theme.Primary
 import com.harsh.rentalconnect.ui.theme.RentalConnectTheme
 import com.harsh.rentalconnect.ui.theme.Surface
 
-data class CountryCode(val flag: String, val dialCode: String, val name: String)
+data class CountryCode(val flag: String, val dialCode: String, val name: String, val maxDigits: Int)
 
 val countryCodes = listOf(
-    CountryCode("🇮🇳", "+91", "India"),
-    CountryCode("🇺🇸", "+1", "United States"),
-    CountryCode("🇬🇧", "+44", "United Kingdom"),
-    CountryCode("🇦🇺", "+61", "Australia"),
-    CountryCode("🇨🇦", "+1", "Canada"),
-    CountryCode("🇸🇬", "+65", "Singapore"),
-    CountryCode("🇦🇪", "+971", "UAE"),
-    CountryCode("🇩🇪", "+49", "Germany"),
-    CountryCode("🇫🇷", "+33", "France"),
-    CountryCode("🇯🇵", "+81", "Japan"),
+    CountryCode("🇮🇳", "+91", "India", 10),
+    CountryCode("🇺🇸", "+1", "United States", 10),
+    CountryCode("🇬🇧", "+44", "United Kingdom", 10),
+    CountryCode("🇦🇺", "+61", "Australia", 9),
+    CountryCode("🇨🇦", "+1", "Canada", 10),
+    CountryCode("🇸🇬", "+65", "Singapore", 8),
+    CountryCode("🇦🇪", "+971", "UAE", 9),
+    CountryCode("🇩🇪", "+49", "Germany", 11),
+    CountryCode("🇫🇷", "+33", "France", 9),
+    CountryCode("🇯🇵", "+81", "Japan", 11),
 )
 
 @Composable
@@ -74,7 +74,11 @@ fun PhoneInputField(
     Spacer(modifier = Modifier.height(6.dp))
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { input ->
+            val digits = input.filter { it.isDigit() || it == ' ' || it == '-' }
+            val stripped = digits.replace(Regex("[\\s\\-]"), "")
+            if (stripped.length <= selectedCountryCode.maxDigits) onValueChange(digits)
+        },
         placeholder = if (placeholder.isNotBlank()) {
             { Text(text = placeholder, color = OnSurfaceVariant) }
         } else null,

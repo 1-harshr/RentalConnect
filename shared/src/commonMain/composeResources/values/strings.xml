@@ -10,7 +10,7 @@
     <string name="onboarding_role_tenant">Tenant</string>
     <string name="onboarding_role_tenant_subtitle">View my rental and owner info</string>
     <string name="onboarding_phone_label">Phone number</string>
-    <string name="onboarding_phone_placeholder">+91 98765 XXXXX</string>
+    <string name="onboarding_phone_placeholder">98765 43210</string>
     <string name="onboarding_name_label">Full name</string>
     <string name="onboarding_email_label">Email address</string>
     <string name="onboarding_email_placeholder">name@example.com</string>
