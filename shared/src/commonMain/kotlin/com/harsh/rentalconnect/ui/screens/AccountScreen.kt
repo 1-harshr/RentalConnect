@@ -29,6 +29,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.harsh.rentalconnect.domain.model.AuthResult
 import com.harsh.rentalconnect.domain.model.AuthValidationError
 import com.harsh.rentalconnect.domain.model.ValidationError
+import com.harsh.rentalconnect.ui.components.CountryCode
+import com.harsh.rentalconnect.ui.components.PhoneInputField
 import com.harsh.rentalconnect.ui.models.Role
 import com.harsh.rentalconnect.ui.theme.AppRadius
 import com.harsh.rentalconnect.ui.theme.AppSpacing
@@ -81,6 +83,8 @@ fun AccountScreen(
     hometownError: ValidationError? = null,
     aadharError: AuthValidationError? = null,
     saveError: AuthResult.Failure? = null,
+    selectedCountryCode: CountryCode,
+    onCountryCodeChange: (CountryCode) -> Unit,
     onNameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onHometownChange: (String) -> Unit,
@@ -131,7 +135,16 @@ fun AccountScreen(
         ) {
             if (isEditing) {
                 EditableField(stringResource(Res.string.account_name_label), userName, onNameChange, nameErrorMessage(nameError))
-                EditableField(stringResource(Res.string.account_phone_label), userPhone, onPhoneChange, phoneErrorMessage(phoneError), KeyboardType.Phone)
+                PhoneInputField(
+                    label = stringResource(Res.string.account_phone_label),
+                    value = userPhone,
+                    onValueChange = onPhoneChange,
+                    selectedCountryCode = selectedCountryCode,
+                    onCountryCodeChange = onCountryCodeChange,
+                    isError = phoneError != null,
+                    errorMessage = phoneErrorMessage(phoneError),
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 EditableField(stringResource(Res.string.account_hometown_label), userHometown, onHometownChange, hometownErrorMessage(hometownError))
                 EditableField(stringResource(Res.string.account_aadhar_label), userAadharId, onAadharChange, aadharErrorMessage(aadharError), KeyboardType.Number)
                 ReadOnlyCard(stringResource(Res.string.account_email_label), userEmail)

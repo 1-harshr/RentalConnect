@@ -12,6 +12,8 @@ import com.harsh.rentalconnect.domain.repository.AuthRepository
 import com.harsh.rentalconnect.domain.usecase.ValidateAadharUseCase
 import com.harsh.rentalconnect.domain.usecase.ValidateNameUseCase
 import com.harsh.rentalconnect.domain.usecase.ValidatePhoneUseCase
+import com.harsh.rentalconnect.ui.components.CountryCode
+import com.harsh.rentalconnect.ui.components.countryCodes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +26,7 @@ data class AccountUiState(
     val draftPhone: String = "",
     val draftHometown: String = "",
     val draftAadharId: String = "",
+    val selectedCountryCode: CountryCode = countryCodes.first(),
     val nameError: ValidationError? = null,
     val phoneError: ValidationError? = null,
     val hometownError: ValidationError? = null,
@@ -60,12 +63,15 @@ class AccountViewModel(
 
     fun startEditing() {
         val user = _uiState.value.session?.user ?: return
+        val detected = countryCodes.firstOrNull { user.phone.startsWith(it.dialCode) } ?: countryCodes.first()
+        val localNumber = user.phone.removePrefix(detected.dialCode)
         _uiState.update {
             it.copy(
                 draftName = user.name,
-                draftPhone = user.phone,
+                draftPhone = localNumber,
                 draftHometown = user.hometown,
                 draftAadharId = user.aadharId,
+                selectedCountryCode = detected,
                 isEditing = true,
                 nameError = null,
                 phoneError = null,
@@ -99,7 +105,16 @@ class AccountViewModel(
     }
 
     fun onPhoneChange(value: String) {
-        _uiState.update { it.copy(draftPhone = value, phoneError = null, saveError = null) }
+        val dialCode = _uiState.value.selectedCountryCode.dialCode
+        val error = if (value.isNotEmpty()) (validatePhone(value, dialCode) as? ValidationResult.Invalid)?.error else null
+        _uiState.update { it.copy(draftPhone = value, phoneError = error, saveError = null) }
+    }
+
+    fun onCountryCodeChange(countryCode: CountryCode) {
+        val error = if (_uiState.value.draftPhone.isNotEmpty()) {
+            (validatePhone(_uiState.value.draftPhone, countryCode.dialCode) as? ValidationResult.Invalid)?.error
+        } else null
+        _uiState.update { it.copy(selectedCountryCode = countryCode, phoneError = error, saveError = null) }
     }
 
     fun onHometownChange(value: String) {
@@ -113,7 +128,7 @@ class AccountViewModel(
     fun save() {
         val state = _uiState.value
         val nameError = (validateName(state.draftName) as? ValidationResult.Invalid)?.error
-        val phoneError = (validatePhone(state.draftPhone) as? ValidationResult.Invalid)?.error
+        val phoneError = (validatePhone(state.draftPhone, state.selectedCountryCode.dialCode) as? ValidationResult.Invalid)?.error
         val hometownError = if (state.draftHometown.isBlank()) ValidationError.EMPTY else null
         val aadharError = validateAadhar(state.draftAadharId)
 
@@ -133,7 +148,7 @@ class AccountViewModel(
             when (val result = authRepository.updateProfile(
                     ProfileUpdateRequest(
                         name = state.draftName,
-                        phone = state.draftPhone,
+                        phone = "${state.selectedCountryCode.dialCode}${state.draftPhone}",
                         hometown = state.draftHometown,
                         aadharId = state.draftAadharId,
                     )
