@@ -19,8 +19,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apartment
+import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -155,7 +158,15 @@ fun OnboardingScreen(
                 .size(AppSize.avatarMd)
                 .clip(RoundedCornerShape(AppRadius.md))
                 .background(Primary),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Apartment,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(28.dp),
+            )
+        }
 
         Spacer(modifier = Modifier.height(AppSpacing.xxl))
 
@@ -192,6 +203,7 @@ fun OnboardingScreen(
                 subtitle = stringResource(Res.string.onboarding_role_owner_subtitle),
                 isSelected = selectedRole == Role.Owner,
                 onSelect = { onRoleSelected(Role.Owner) },
+                icon = Icons.Outlined.Business,
                 modifier = Modifier.weight(1f),
             )
             RoleCard(
@@ -199,6 +211,7 @@ fun OnboardingScreen(
                 subtitle = stringResource(Res.string.onboarding_role_tenant_subtitle),
                 isSelected = selectedRole == Role.Tenant,
                 onSelect = { onRoleSelected(Role.Tenant) },
+                icon = Icons.Outlined.Person,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -515,6 +528,7 @@ private fun RoleCard(
     subtitle: String,
     isSelected: Boolean,
     onSelect: () -> Unit,
+    icon: ImageVector,
     modifier: Modifier = Modifier,
 ) {
     val borderColor = if (isSelected) Primary else OutlineSubtle
@@ -535,7 +549,15 @@ private fun RoleCard(
                 .size(36.dp)
                 .clip(RoundedCornerShape(AppRadius.sm))
                 .background(if (isSelected) PrimarySubtle else SurfaceMuted),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isSelected) Primary else OnSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+            )
+        }
         Text(text = label, style = RentalConnectTheme.typography.titleMedium, color = OnSurface)
         Text(text = subtitle, style = RentalConnectTheme.typography.bodyMedium, color = OnSurfaceVariant)
     }
