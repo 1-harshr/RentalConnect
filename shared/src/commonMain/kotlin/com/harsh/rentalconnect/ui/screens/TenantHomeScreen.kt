@@ -18,6 +18,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -29,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import com.harsh.rentalconnect.ui.components.NavItem
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -416,47 +425,33 @@ private fun TenantBottomNavigation(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
 ) {
-    val tabLabels = listOf(
-        stringResource(Res.string.nav_home),
-        stringResource(Res.string.nav_property),
-        stringResource(Res.string.nav_profile),
+    val navItems = listOf(
+        NavItem(stringResource(Res.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
+        NavItem(stringResource(Res.string.nav_property), Icons.Filled.LocationOn, Icons.Outlined.LocationOn),
+        NavItem(stringResource(Res.string.nav_profile), Icons.Filled.AccountCircle, Icons.Outlined.AccountCircle),
     )
 
     NavigationBar(
         containerColor = Surface,
         tonalElevation = 0.dp,
     ) {
-        tabLabels.forEachIndexed { index, label ->
+        navItems.forEachIndexed { index, item ->
+            val selected = index == selectedTab
             NavigationBarItem(
-                selected = selectedTab == index,
+                selected = selected,
                 onClick = { onTabSelected(index) },
                 icon = {
-                    // Icon placeholder — colored dot or letter badge
-                    Box(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (selectedTab == index) Primary.copy(alpha = 0.15f)
-                                else Color.Transparent,
-                            ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = label.first().toString(),
-                            style = RentalConnectTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp,
-                            ),
-                            color = if (selectedTab == index) Primary else OnSurfaceVariant,
-                        )
-                    }
+                    Icon(
+                        imageVector = if (selected) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp),
+                    )
                 },
                 label = {
                     Text(
-                        text = label,
+                        text = item.label,
                         style = RentalConnectTheme.typography.labelMedium.copy(
-                            fontWeight = if (selectedTab == index) FontWeight.SemiBold else FontWeight.Normal,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                         ),
                     )
                 },
