@@ -12,9 +12,11 @@ import io.ktor.client.call.body
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -34,14 +36,17 @@ class SupabaseAuthGateway(
         if (!config.isConfigured) return AuthResult.Failure(AuthError.BACKEND_NOT_CONFIGURED)
 
         return runCatching {
-            val response: SupabaseAuthResponse = httpClient.post("${config.url}/auth/v1/token?grant_type=password") {
+            val httpResponse: HttpResponse = httpClient.post("${config.url}/auth/v1/token?grant_type=password") {
                 contentType(ContentType.Application.Json)
                 header("apikey", config.anonKey)
                 header(HttpHeaders.Authorization, "Bearer ${config.anonKey}")
                 setBody(SignInBody(email = request.email.trim(), password = request.password))
-            }.body()
-
-            AuthResult.Success(response.toSession())
+            }
+            if (httpResponse.status.isSuccess()) {
+                AuthResult.Success(httpResponse.body<SupabaseAuthResponse>().toSession())
+            } else {
+                AuthResult.Failure(httpResponse.toAuthError())
+            }
         }.getOrElse(::mapExceptionToFailure)
     }
 
@@ -49,7 +54,7 @@ class SupabaseAuthGateway(
         if (!config.isConfigured) return AuthResult.Failure(AuthError.BACKEND_NOT_CONFIGURED)
 
         return runCatching {
-            val response: SupabaseAuthResponse = httpClient.post("${config.url}/auth/v1/signup") {
+            val httpResponse: HttpResponse = httpClient.post("${config.url}/auth/v1/signup") {
                 contentType(ContentType.Application.Json)
                 header("apikey", config.anonKey)
                 header(HttpHeaders.Authorization, "Bearer ${config.anonKey}")
@@ -66,10 +71,24 @@ class SupabaseAuthGateway(
                         ),
                     )
                 )
-            }.body()
-
-            AuthResult.Success(response.toSession())
+            }
+            if (httpResponse.status.isSuccess()) {
+                AuthResult.Success(httpResponse.body<SupabaseAuthResponse>().toSession())
+            } else {
+                AuthResult.Failure(httpResponse.toAuthError())
+            }
         }.getOrElse(::mapExceptionToFailure)
+    }
+
+    private suspend fun HttpResponse.toAuthError(): AuthError {
+        val errorBody = runCatching { body<SupabaseErrorBody>() }.getOrNull()
+        val msg = (errorBody?.msg ?: errorBody?.errorDescription ?: "").lowercase()
+        val code = errorBody?.errorCode ?: errorBody?.error ?: ""
+        return when {
+            "invalid_credentials" in code || "invalid login credentials" in msg -> AuthError.INVALID_CREDENTIALS
+            "user_already_exists" in code || "already registered" in msg -> AuthError.EMAIL_ALREADY_IN_USE
+            else -> AuthError.NETWORK
+        }
     }
 
     private fun SupabaseAuthResponse.toSession(): AuthSession {
@@ -132,4 +151,12 @@ private data class SupabaseUser(
     val id: String,
     val email: String,
     @SerialName("user_metadata") val metadata: UserMetadata? = null,
+)
+
+@Serializable
+private data class SupabaseErrorBody(
+    @SerialName("error_code") val errorCode: String? = null,
+    @SerialName("msg") val msg: String? = null,
+    val error: String? = null,
+    @SerialName("error_description") val errorDescription: String? = null,
 )
