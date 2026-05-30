@@ -1,0 +1,4 @@
+# Copy this file to local.properties and fill in your Supabase credentials.
+# local.properties is gitignored and should never be committed.
+supabase.url=https://your-project-ref.supabase.co
+supabase.anon_key=your-anon-key-here

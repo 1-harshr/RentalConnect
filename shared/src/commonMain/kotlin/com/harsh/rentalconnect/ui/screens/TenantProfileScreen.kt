@@ -20,6 +20,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -36,7 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import com.harsh.rentalconnect.ui.components.NavItem
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -115,6 +126,7 @@ fun TenantProfileScreen(
             // Info rows
             InfoRow(
                 iconColor = PrimarySubtle,
+                icon = Icons.Outlined.Phone,
                 label = stringResource(Res.string.tenant_profile_phone_label),
                 value = tenant.phone,
                 valueColor = Primary,
@@ -128,6 +140,7 @@ fun TenantProfileScreen(
 
             InfoRow(
                 iconColor = IconTintAmber,
+                icon = Icons.Outlined.LocationOn,
                 label = stringResource(Res.string.tenant_profile_hometown_label),
                 value = tenant.hometown,
             )
@@ -139,6 +152,7 @@ fun TenantProfileScreen(
 
             InfoRow(
                 iconColor = IconTintPurple,
+                icon = Icons.Outlined.AccountCircle,
                 label = stringResource(Res.string.tenant_profile_aadhar_label),
                 value = tenant.aadharId,
             )
@@ -150,6 +164,7 @@ fun TenantProfileScreen(
 
             InfoRow(
                 iconColor = IconTintGreen,
+                icon = Icons.Outlined.Home,
                 label = stringResource(Res.string.tenant_profile_since_label),
                 value = tenant.tenantSince,
             )
@@ -319,6 +334,7 @@ private fun TenantHeader(tenant: TenantDetail) {
 @Composable
 private fun InfoRow(
     iconColor: Color,
+    icon: ImageVector,
     label: String,
     value: String,
     valueColor: Color = OnSurface,
@@ -331,13 +347,20 @@ private fun InfoRow(
             .padding(horizontal = AppSpacing.xl, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Colored square icon placeholder
         Box(
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(iconColor),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp),
+            )
+        }
 
         Spacer(modifier = Modifier.width(AppSpacing.lg))
 
@@ -387,7 +410,15 @@ private fun AssignedPropertyCard(
                 .size(52.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .background(Divider),
-        )
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Home,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(20.dp),
+            )
+        }
 
         Spacer(modifier = Modifier.width(14.dp))
 
@@ -416,36 +447,32 @@ private fun TenantProfileBottomNav(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
 ) {
-    val bottomNavLabels = listOf(
-        stringResource(Res.string.nav_home),
-        stringResource(Res.string.nav_properties),
-        stringResource(Res.string.nav_tenants),
-        stringResource(Res.string.nav_profile),
+    val navItems = listOf(
+        NavItem(stringResource(Res.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
+        NavItem(stringResource(Res.string.nav_properties), Icons.Filled.LocationOn, Icons.Outlined.LocationOn),
+        NavItem(stringResource(Res.string.nav_tenants), Icons.Filled.Person, Icons.Outlined.Person),
+        NavItem(stringResource(Res.string.nav_profile), Icons.Filled.AccountCircle, Icons.Outlined.AccountCircle),
     )
 
     NavigationBar(
         containerColor = Surface,
         tonalElevation = 0.dp,
     ) {
-        bottomNavLabels.forEachIndexed { index, label ->
+        navItems.forEachIndexed { index, item ->
             val isSelected = index == selectedTab
             NavigationBarItem(
                 selected = isSelected,
                 onClick = { onTabSelected(index) },
                 icon = {
-                    // Icon placeholder — no icons library dependency assumed
-                    Box(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(RoundedCornerShape(AppRadius.sm))
-                            .background(
-                                if (isSelected) Primary else OutlineSubtle,
-                            ),
+                    Icon(
+                        imageVector = if (isSelected) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp),
                     )
                 },
                 label = {
                     Text(
-                        text = label,
+                        text = item.label,
                         style = RentalConnectTheme.typography.labelMedium,
                     )
                 },

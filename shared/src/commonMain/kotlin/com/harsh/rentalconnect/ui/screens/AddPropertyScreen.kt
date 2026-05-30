@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -54,33 +56,56 @@ import com.harsh.rentalconnect.ui.theme.SurfaceMuted
 import org.jetbrains.compose.resources.stringResource
 import rentalconnect.shared.generated.resources.Res
 import rentalconnect.shared.generated.resources.add_property_add_photos
+import rentalconnect.shared.generated.resources.add_property_add_photo_url
 import rentalconnect.shared.generated.resources.add_property_address_label
 import rentalconnect.shared.generated.resources.add_property_availability_label
 import rentalconnect.shared.generated.resources.add_property_house_number_label
 import rentalconnect.shared.generated.resources.add_property_map_label
 import rentalconnect.shared.generated.resources.add_property_name_label
+import rentalconnect.shared.generated.resources.add_property_no_photos
+import rentalconnect.shared.generated.resources.add_property_photo_url_placeholder
+import rentalconnect.shared.generated.resources.add_property_photo_urls_label
 import rentalconnect.shared.generated.resources.add_property_save
+import rentalconnect.shared.generated.resources.add_property_saving
 import rentalconnect.shared.generated.resources.add_property_tap_to_pin
 import rentalconnect.shared.generated.resources.add_property_title
 import rentalconnect.shared.generated.resources.add_property_type_label
 import rentalconnect.shared.generated.resources.add_property_type_placeholder
+import rentalconnect.shared.generated.resources.add_property_uploading
+import rentalconnect.shared.generated.resources.add_property_uploading_photos
 import rentalconnect.shared.generated.resources.cd_back
+import rentalconnect.shared.generated.resources.edit_property_title
 import rentalconnect.shared.generated.resources.status_occupied
 import rentalconnect.shared.generated.resources.status_vacant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPropertyScreen(
+    isEditMode: Boolean = false,
     propertyName: String,
     onPropertyNameChange: (String) -> Unit,
+    propertyNameError: String? = null,
     houseNumber: String,
     onHouseNumberChange: (String) -> Unit,
+    houseNumberError: String? = null,
     fullAddress: String,
     onFullAddressChange: (String) -> Unit,
+    fullAddressError: String? = null,
     type: String,
     onTypeChange: (String) -> Unit,
+    typeError: String? = null,
+    photoUrlInput: String,
+    onPhotoUrlInputChange: (String) -> Unit,
+    photoUrls: List<String>,
+    loadError: String? = null,
+    isUploadingPhotos: Boolean = false,
+    photoUploadError: String? = null,
+    onDismissPhotoUploadError: () -> Unit = {},
+    onAddPhotoUrl: () -> Unit,
+    onRemovePhotoUrl: (String) -> Unit,
     isOccupied: Boolean,
     onAvailabilityChange: (Boolean) -> Unit,
+    isSaving: Boolean = false,
     onAddPhotos: () -> Unit,
     onTapToPin: () -> Unit,
     onSave: () -> Unit,
@@ -91,7 +116,11 @@ fun AddPropertyScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(Res.string.add_property_title),
+                        text = if (isEditMode) {
+                            stringResource(Res.string.edit_property_title)
+                        } else {
+                            stringResource(Res.string.add_property_title)
+                        },
                         style = RentalConnectTheme.typography.titleLarge,
                         color = OnSurface,
                     )
@@ -107,12 +136,16 @@ fun AddPropertyScreen(
                 },
                 actions = {
                     Text(
-                        text = stringResource(Res.string.add_property_save),
+                        text = when {
+                            isSaving -> stringResource(Res.string.add_property_saving)
+                            isUploadingPhotos -> stringResource(Res.string.add_property_uploading)
+                            else -> stringResource(Res.string.add_property_save)
+                        },
                         style = RentalConnectTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = Primary,
                         modifier = Modifier
                             .padding(end = AppSpacing.lg)
-                            .clickable(onClick = onSave),
+                            .clickable(enabled = !isSaving && !isUploadingPhotos, onClick = onSave),
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -142,14 +175,97 @@ fun AddPropertyScreen(
                         color = OutlineSubtle,
                         shape = RoundedCornerShape(AppRadius.md),
                     )
-                    .clickable(onClick = onAddPhotos),
+                    .clickable(enabled = !isUploadingPhotos, onClick = onAddPhotos),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = stringResource(Res.string.add_property_add_photos),
+                    text = if (isUploadingPhotos) {
+                        stringResource(Res.string.add_property_uploading_photos)
+                    } else {
+                        stringResource(Res.string.add_property_add_photos)
+                    },
                     style = RentalConnectTheme.typography.bodyLarge,
                     color = OnSurfaceVariant,
                 )
+            }
+
+            listOfNotNull(loadError, photoUploadError).forEach { message ->
+                Text(
+                    text = message,
+                    style = RentalConnectTheme.typography.bodySmall,
+                    color = Color(0xFFC62828),
+                    modifier = Modifier.clickable(onClick = onDismissPhotoUploadError),
+                )
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.sm)) {
+                Text(
+                    text = stringResource(Res.string.add_property_photo_urls_label),
+                    style = RentalConnectTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                    color = OnSurface,
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedTextField(
+                        value = photoUrlInput,
+                        onValueChange = onPhotoUrlInputChange,
+                        placeholder = {
+                            Text(
+                                text = stringResource(Res.string.add_property_photo_url_placeholder),
+                                color = OnSurfaceVariant,
+                            )
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Primary,
+                            unfocusedBorderColor = OutlineSubtle,
+                            focusedContainerColor = Surface,
+                            unfocusedContainerColor = Surface,
+                        ),
+                        modifier = Modifier.weight(1f),
+                    )
+
+                    TextButton(onClick = onAddPhotoUrl) {
+                        Text(
+                            text = stringResource(Res.string.add_property_add_photo_url),
+                            color = Primary,
+                        )
+                    }
+                }
+
+                if (photoUrls.isEmpty()) {
+                    Text(
+                        text = stringResource(Res.string.add_property_no_photos),
+                        style = RentalConnectTheme.typography.bodySmall,
+                        color = OnSurfaceVariant,
+                    )
+                } else {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.sm),
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
+                    ) {
+                        photoUrls.forEach { url ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(AppRadius.pill))
+                                    .background(PrimarySubtle)
+                                    .clickable { onRemovePhotoUrl(url) }
+                                    .padding(horizontal = AppSpacing.md, vertical = AppSpacing.sm),
+                            ) {
+                                Text(
+                                    text = url.take(36) + if (url.length > 36) "..." else "",
+                                    style = RentalConnectTheme.typography.bodySmall,
+                                    color = Primary,
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             // Property name field
@@ -157,6 +273,7 @@ fun AddPropertyScreen(
                 label = stringResource(Res.string.add_property_name_label),
                 value = propertyName,
                 onValueChange = onPropertyNameChange,
+                errorMessage = propertyNameError,
                 placeholder = "",
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -170,6 +287,7 @@ fun AddPropertyScreen(
                 label = stringResource(Res.string.add_property_house_number_label),
                 value = houseNumber,
                 onValueChange = onHouseNumberChange,
+                errorMessage = houseNumberError,
                 placeholder = "",
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -183,6 +301,7 @@ fun AddPropertyScreen(
                 label = stringResource(Res.string.add_property_address_label),
                 value = fullAddress,
                 onValueChange = onFullAddressChange,
+                errorMessage = fullAddressError,
                 placeholder = "",
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -196,6 +315,7 @@ fun AddPropertyScreen(
                 label = stringResource(Res.string.add_property_type_label),
                 value = type,
                 onValueChange = onTypeChange,
+                errorMessage = typeError,
                 placeholder = stringResource(Res.string.add_property_type_placeholder),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
@@ -273,6 +393,7 @@ private fun LabeledTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
+    errorMessage: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     modifier: Modifier = Modifier,
 ) {
@@ -289,6 +410,7 @@ private fun LabeledTextField(
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
+            isError = errorMessage != null,
             placeholder = if (placeholder.isNotEmpty()) {
                 {
                     Text(
@@ -308,6 +430,13 @@ private fun LabeledTextField(
             ),
             modifier = Modifier.fillMaxWidth(),
         )
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                style = RentalConnectTheme.typography.bodySmall,
+                color = Color.Red,
+            )
+        }
     }
 }
 
@@ -348,16 +477,27 @@ private fun AvailabilityToggleButton(
 fun AddPropertyScreenPreview() {
     RentalConnectTheme {
         AddPropertyScreen(
+            isEditMode = false,
             propertyName = "Sunrise Apartments",
             onPropertyNameChange = {},
+            propertyNameError = null,
             houseNumber = "HNO-14B",
             onHouseNumberChange = {},
+            houseNumberError = null,
             fullAddress = "14B, MG Road, Bengaluru 560001",
             onFullAddressChange = {},
+            fullAddressError = null,
             type = "",
             onTypeChange = {},
+            typeError = null,
+            photoUrlInput = "",
+            onPhotoUrlInputChange = {},
+            photoUrls = listOf("https://example.com/photo.jpg"),
+            onAddPhotoUrl = {},
+            onRemovePhotoUrl = {},
             isOccupied = true,
             onAvailabilityChange = {},
+            isSaving = false,
             onAddPhotos = {},
             onTapToPin = {},
             onSave = {},

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -15,10 +16,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -47,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.harsh.rentalconnect.ui.models.PropertyDetail
 import com.harsh.rentalconnect.ui.models.TenantSummary
 import com.harsh.rentalconnect.ui.theme.AppRadius
@@ -202,29 +207,49 @@ fun PropertyDetailOwnerScreen(
             // ----------------------------------------------------------------
             // Image carousel placeholder
             // ----------------------------------------------------------------
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(16f / 9f)
-                    .background(PrimarySubtle), // light blue
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "Photo",
-                    color = OnPrimaryContainer,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp,
-                )
+            if (property.photoUrls.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .background(PrimarySubtle),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Photo",
+                        color = OnPrimaryContainer,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+                    )
+                }
+            } else {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = AppSpacing.lg),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.md),
+                ) {
+                    itemsIndexed(property.photoUrls) { index, photoUrl ->
+                        AsyncImage(
+                            model = photoUrl,
+                            contentDescription = "Property photo ${index + 1}",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .aspectRatio(16f / 9f)
+                                .clip(RoundedCornerShape(AppRadius.md))
+                                .background(PrimarySubtle),
+                        )
+                    }
+                }
             }
 
-            // Pagination dots
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 10.dp),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                repeat(3) { i ->
+                repeat(maxOf(property.photoUrls.size, 1)) { i ->
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 3.dp)
@@ -505,6 +530,7 @@ fun PropertyDetailOwnerScreenPreview() {
                 type = "2BHK Apartment",
                 houseNumber = "HNO-14B",
                 isOccupied = true,
+                photoUrls = listOf("https://images.unsplash.com/photo-1460317442991-0ec209397118"),
                 tenants = listOf(
                     TenantSummary(
                         id = "t1",

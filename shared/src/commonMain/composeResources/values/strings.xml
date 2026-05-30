@@ -10,9 +10,16 @@
     <string name="onboarding_role_tenant">Tenant</string>
     <string name="onboarding_role_tenant_subtitle">View my rental and owner info</string>
     <string name="onboarding_phone_label">Phone number</string>
-    <string name="onboarding_phone_placeholder">+91 98765 XXXXX</string>
+    <string name="onboarding_phone_placeholder">98765 43210</string>
     <string name="onboarding_name_label">Full name</string>
+    <string name="onboarding_email_label">Email address</string>
+    <string name="onboarding_email_placeholder">name@example.com</string>
+    <string name="onboarding_password_label">Password</string>
+    <string name="onboarding_confirm_password_label">Confirm password</string>
+    <string name="onboarding_hometown_label">Hometown</string>
+    <string name="onboarding_aadhar_label">Aadhar ID</string>
     <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_creating_account">Creating account...</string>
     <string name="onboarding_already_have_account">Already have an account?</string>
     <string name="onboarding_sign_in">Sign in</string>
 
@@ -46,8 +53,13 @@
 
     <!-- ── Add Property ───────────────────────────────────────────────────── -->
     <string name="add_property_title">Add Property</string>
+    <string name="edit_property_title">Edit Property</string>
     <string name="add_property_save">Save</string>
     <string name="add_property_add_photos">Add photos</string>
+    <string name="add_property_photo_urls_label">Photo URLs</string>
+    <string name="add_property_photo_url_placeholder">https://...</string>
+    <string name="add_property_add_photo_url">Add URL</string>
+    <string name="add_property_no_photos">No property photos added yet</string>
     <string name="add_property_name_label">Property name</string>
     <string name="add_property_house_number_label">House number</string>
     <string name="add_property_address_label">Full address</string>
@@ -56,16 +68,23 @@
     <string name="add_property_availability_label">Availability status</string>
     <string name="add_property_map_label">Map location</string>
     <string name="add_property_tap_to_pin">Tap to pin location</string>
+    <string name="add_property_empty_error">This field is required</string>
+    <string name="add_property_saving">Saving...</string>
+    <string name="add_property_uploading">Uploading...</string>
+    <string name="add_property_uploading_photos">Uploading photos...</string>
+    <string name="add_property_upload_error">We could not upload the selected photos.</string>
 
     <!-- ── Tenant Home ────────────────────────────────────────────────────── -->
     <string name="tenant_home_greeting">Welcome back,</string>
     <string name="tenant_home_property_section">MY PROPERTY</string>
+    <string name="tenant_home_rentals_section">MY RENTALS</string>
     <string name="tenant_home_your_home_badge">Your home</string>
     <string name="tenant_home_view_details">View details</string>
     <string name="tenant_home_owner_section">MY OWNER</string>
     <string name="tenant_home_owner_role">Property Owner</string>
     <string name="tenant_home_call_button">Call</string>
     <string name="tenant_home_message_button">Message</string>
+    <string name="tenant_home_owner_prefix">Owner</string>
 
     <!-- ── Property Detail (Tenant) ───────────────────────────────────────── -->
     <string name="property_detail_tenant_title">Property Details</string>
@@ -89,5 +108,72 @@
     <!-- ── Content descriptions ───────────────────────────────────────────── -->
     <string name="cd_back">Back</string>
     <string name="cd_avatar">User avatar</string>
+
+    <!-- ── Validation errors ─────────────────────────────────────────────── -->
+    <string name="error_name_empty">Name is required</string>
+    <string name="error_name_too_short">Name must be at least 2 characters</string>
+    <string name="error_name_too_long">Name cannot exceed 50 characters</string>
+    <string name="error_name_invalid_format">Name can only contain letters, spaces, and . \' -</string>
+    <string name="error_phone_empty">Phone number is required</string>
+    <string name="error_phone_invalid_format">Enter a valid 10-digit phone number</string>
+    <string name="error_email_empty">Email is required</string>
+    <string name="error_email_invalid">Enter a valid email address</string>
+    <string name="error_password_empty">Password is required</string>
+    <string name="error_password_short">Password must be at least 8 characters</string>
+    <string name="error_confirm_password_mismatch">Passwords do not match</string>
+    <string name="error_aadhar_required">Aadhar ID is required</string>
+    <string name="error_aadhar_invalid">Enter a valid 12-digit Aadhar ID</string>
+
+    <!-- ── Generic error ─────────────────────────────────────────────────── -->
+    <string name="error_generic_message">Something went wrong. Please try again.</string>
+    <string name="error_generic_required">This field is required</string>
+    <string name="error_retry">Retry</string>
+    <string name="error_invalid_credentials">Incorrect email or password</string>
+    <string name="error_email_in_use">That email is already registered</string>
+    <string name="error_phone_in_use">That phone number is already in use</string>
+    <string name="error_backend_unavailable">Authentication service is unavailable right now</string>
+    <string name="error_network_message">We could not reach the server. Please try again.</string>
+
+    <!-- ── Sign In ────────────────────────────────────────────────────────── -->
+    <string name="sign_in_title">Welcome back</string>
+    <string name="sign_in_subtitle">Sign in to continue</string>
+    <string name="sign_in_email_label">Email</string>
+    <string name="sign_in_password_label">Password</string>
+    <string name="sign_in_action">Sign in</string>
+    <string name="sign_in_submitting">Signing in...</string>
+    <string name="sign_in_create_prompt">Don&#39;t have an account?</string>
+    <string name="sign_in_create_action">Create one</string>
+    <!-- ── Empty and account states ──────────────────────────────────────── -->
+    <string name="empty_owner_title">No properties yet</string>
+    <string name="empty_owner_body">Add your first property to start managing homes and tenants.</string>
+    <string name="empty_owner_action">Add property</string>
+    <string name="empty_tenant_title">Waiting for property link</string>
+    <string name="empty_tenant_body">Your account exists, but the owner has not linked a rental property yet.</string>
+    <string name="empty_secondary_action">Back to account</string>
+    <string name="account_title">My Account</string>
+    <string name="account_sign_out">Sign out</string>
+    <string name="account_name_label">Name</string>
+    <string name="account_email_label">Email</string>
+    <string name="account_phone_label">Phone</string>
+    <string name="account_hometown_label">Hometown</string>
+    <string name="account_aadhar_label">Aadhar ID</string>
+    <string name="account_role_label">Role</string>
+    <string name="account_role_owner">Owner</string>
+    <string name="account_role_tenant">Tenant</string>
+    <string name="account_edit">Edit</string>
+    <string name="account_save">Save</string>
+    <string name="account_cancel">Cancel</string>
+
+    <!-- Tenant assignment -->
+    <string name="add_tenant_title">Add Tenant</string>
+    <string name="add_tenant_phone_label">Tenant phone number</string>
+    <string name="add_tenant_search">Search</string>
+    <string name="add_tenant_searching">Searching...</string>
+    <string name="add_tenant_no_match">No tenant account found for that phone number.</string>
+    <string name="add_tenant_result_title">Tenant found</string>
+    <string name="add_tenant_confirm">Attach to property</string>
+    <string name="add_tenant_attaching">Attaching...</string>
+    <string name="add_tenant_already_assigned">This tenant is already assigned to the property.</string>
+    <string name="add_tenant_hint">The tenant must already have a registered account.</string>
 
 </resources>
