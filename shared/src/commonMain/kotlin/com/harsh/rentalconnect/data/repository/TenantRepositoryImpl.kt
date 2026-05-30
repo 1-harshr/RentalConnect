@@ -1,6 +1,7 @@
 package com.harsh.rentalconnect.data.repository
 
 import com.harsh.rentalconnect.data.AppStore
+import com.harsh.rentalconnect.data.normalizePhone
 import com.harsh.rentalconnect.data.remote.SupabaseDataGateway
 import com.harsh.rentalconnect.domain.model.Tenant
 import com.harsh.rentalconnect.domain.repository.TenantRepository
@@ -121,9 +122,6 @@ class TenantRepositoryImpl(
             }
         }
     }
-
-    private fun normalizePhone(phone: String): String =
-        phone.filter { it.isDigit() }.takeLast(10)
 
     private fun mergeByIds(
         existing: List<Tenant>,

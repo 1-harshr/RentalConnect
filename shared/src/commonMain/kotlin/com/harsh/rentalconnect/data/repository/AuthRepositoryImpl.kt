@@ -2,6 +2,7 @@ package com.harsh.rentalconnect.data.repository
 
 import com.harsh.rentalconnect.data.AccountRecord
 import com.harsh.rentalconnect.data.AppStore
+import com.harsh.rentalconnect.data.normalizePhone
 import com.harsh.rentalconnect.data.remote.SupabaseAuthGateway
 import com.harsh.rentalconnect.data.remote.SupabaseDataGateway
 import com.harsh.rentalconnect.domain.model.AuthError
@@ -192,6 +193,4 @@ class AuthRepositoryImpl(
         }
     }
 
-    private fun normalizePhone(phone: String): String =
-        phone.filter { it.isDigit() }.takeLast(10)
 }
