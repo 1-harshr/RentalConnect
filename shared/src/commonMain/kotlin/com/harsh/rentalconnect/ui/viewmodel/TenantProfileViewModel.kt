@@ -2,6 +2,7 @@ package com.harsh.rentalconnect.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.harsh.rentalconnect.domain.repository.TenantRepository
 import com.harsh.rentalconnect.domain.usecase.GetTenantDetailUseCase
 import com.harsh.rentalconnect.ui.models.TenantDetail
 import kotlinx.coroutines.flow.SharingStarted
@@ -9,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 sealed class TenantProfileUiState {
     object Loading : TenantProfileUiState()
@@ -19,7 +21,15 @@ sealed class TenantProfileUiState {
 class TenantProfileViewModel(
     tenantId: String,
     getTenantDetail: GetTenantDetailUseCase,
+    private val tenantRepository: TenantRepository,
 ) : ViewModel() {
+    private val currentTenantId = tenantId
+
+    init {
+        viewModelScope.launch {
+            tenantRepository.refreshTenant(tenantId)
+        }
+    }
 
     val uiState: StateFlow<TenantProfileUiState> = getTenantDetail(tenantId)
         .map<_, TenantProfileUiState> { tenant ->
@@ -45,4 +55,11 @@ class TenantProfileViewModel(
         }
         .catch { emit(TenantProfileUiState.Error(it.message ?: "Unknown error")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TenantProfileUiState.Loading)
+
+    fun removeTenant(onRemoved: () -> Unit) {
+        viewModelScope.launch {
+            tenantRepository.removeTenant(currentTenantId)
+            onRemoved()
+        }
+    }
 }

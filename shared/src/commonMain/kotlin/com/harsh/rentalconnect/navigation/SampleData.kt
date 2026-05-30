@@ -57,6 +57,10 @@ object SampleData {
             type = "2BHK Apartment",
             houseNumber = "HNO-14B",
             isOccupied = true,
+            photoUrls = listOf(
+                "https://images.unsplash.com/photo-1460317442991-0ec209397118",
+                "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688",
+            ),
             tenants = tenantSummaries,
         )
         else -> PropertyDetail(
@@ -66,6 +70,7 @@ object SampleData {
             type = "3BHK Apartment",
             houseNumber = "HNO-22",
             isOccupied = false,
+            photoUrls = listOf("https://images.unsplash.com/photo-1494526585095-c41746248156"),
             tenants = emptyList(),
         )
     }
@@ -118,10 +123,15 @@ object SampleData {
     val tenantInitials = "AK"
 
     val tenantPropertyInfo = TenantPropertyInfo(
+        propertyId = "p1",
         propertyName = "Sunrise Apartments",
         address = "14B, MG Road, Bengaluru",
+        houseNumber = "HNO-14B",
         flatNumber = "Flat 2A",
         type = "2BHK",
+        isOccupied = true,
+        ownerName = "Rajesh Kumar",
+        ownerPhone = "+91 99887 76655",
     )
 
     val tenantOwnerInfo = OwnerInfo(
@@ -136,6 +146,10 @@ object SampleData {
         flatNumber = "2A",
         type = "2BHK Apartment",
         houseNumber = "HNO-14B",
+        photoUrls = listOf(
+            "https://images.unsplash.com/photo-1460317442991-0ec209397118",
+            "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688",
+        ),
     )
 
     val tenantOwnerContact = TenantOwnerInfo(

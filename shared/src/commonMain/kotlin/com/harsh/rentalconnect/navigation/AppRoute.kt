@@ -11,6 +11,9 @@ sealed interface AppRoute {
     @Serializable
     data object SignIn : AppRoute
 
+    @Serializable
+    data object Account : AppRoute
+
     // ── Owner flow ────────────────────────────────────────────────────────────
     @Serializable
     data object OwnerHome : AppRoute
@@ -19,15 +22,21 @@ sealed interface AppRoute {
     data class PropertyDetailOwner(val propertyId: String) : AppRoute
 
     @Serializable
+    data class AddTenant(val propertyId: String) : AppRoute
+
+    @Serializable
     data class TenantProfile(val propertyId: String, val tenantId: String) : AppRoute
 
     @Serializable
     data object AddProperty : AppRoute
+
+    @Serializable
+    data class EditProperty(val propertyId: String) : AppRoute
 
     // ── Tenant flow ───────────────────────────────────────────────────────────
     @Serializable
     data object TenantHome : AppRoute
 
     @Serializable
-    data object PropertyDetailTenant : AppRoute
+    data class PropertyDetailTenant(val propertyId: String) : AppRoute
 }

@@ -2,6 +2,7 @@ package com.harsh.rentalconnect.domain.model
 
 data class Property(
     val id: String,
+    val ownerId: String,
     val name: String,
     val address: String,
     val type: String,
@@ -10,4 +11,5 @@ data class Property(
     val tenantCount: Int,
     val ownerName: String = "",
     val ownerPhone: String = "",
+    val photoUrls: List<String> = emptyList(),
 )

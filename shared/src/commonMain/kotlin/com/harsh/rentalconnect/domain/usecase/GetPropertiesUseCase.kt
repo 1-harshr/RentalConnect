@@ -5,5 +5,5 @@ import com.harsh.rentalconnect.domain.repository.PropertyRepository
 import kotlinx.coroutines.flow.Flow
 
 class GetPropertiesUseCase(private val repository: PropertyRepository) {
-    operator fun invoke(): Flow<List<Property>> = repository.getProperties()
+    operator fun invoke(ownerId: String? = null): Flow<List<Property>> = repository.getProperties(ownerId)
 }

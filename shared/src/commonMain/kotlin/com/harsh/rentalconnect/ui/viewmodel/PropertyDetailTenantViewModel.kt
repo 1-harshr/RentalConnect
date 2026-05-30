@@ -2,8 +2,11 @@ package com.harsh.rentalconnect.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.harsh.rentalconnect.domain.model.AuthUser
+import com.harsh.rentalconnect.domain.repository.PropertyRepository
+import com.harsh.rentalconnect.domain.repository.TenantRepository
 import com.harsh.rentalconnect.domain.usecase.GetPropertyDetailUseCase
-import com.harsh.rentalconnect.domain.usecase.GetTenantDetailUseCase
+import com.harsh.rentalconnect.domain.usecase.GetTenantAssignmentsUseCase
 import com.harsh.rentalconnect.ui.models.TenantOwnerInfo
 import com.harsh.rentalconnect.ui.models.TenantPropertyDetail
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 sealed class PropertyDetailTenantUiState {
     object Loading : PropertyDetailTenantUiState()
@@ -25,14 +29,24 @@ sealed class PropertyDetailTenantUiState {
 }
 
 class PropertyDetailTenantViewModel(
-    tenantId: String = "t1",
-    getTenantDetail: GetTenantDetailUseCase,
+    propertyId: String,
+    currentUser: AuthUser,
+    tenantRepository: TenantRepository,
+    propertyRepository: PropertyRepository,
+    getTenantAssignments: GetTenantAssignmentsUseCase,
     getPropertyDetail: GetPropertyDetailUseCase,
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            tenantRepository.refreshTenantsForPhone(currentUser.phone)
+            propertyRepository.refreshPropertyDetail(propertyId)
+        }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<PropertyDetailTenantUiState> = getTenantDetail(tenantId)
-        .flatMapLatest { tenant ->
+    val uiState: StateFlow<PropertyDetailTenantUiState> = getTenantAssignments(currentUser.phone)
+        .flatMapLatest { assignments ->
+            val tenant = assignments.firstOrNull { it.propertyId == propertyId }
             if (tenant == null) return@flatMapLatest flowOf(PropertyDetailTenantUiState.Error("Tenant not found"))
             getPropertyDetail(tenant.propertyId).map<_, PropertyDetailTenantUiState> { (property, _) ->
                 if (property == null) {
@@ -45,6 +59,7 @@ class PropertyDetailTenantViewModel(
                             flatNumber = tenant.flatNumber,
                             type = property.type,
                             houseNumber = property.houseNumber,
+                            photoUrls = property.photoUrls,
                         ),
                         owner = TenantOwnerInfo(
                             name = property.ownerName,

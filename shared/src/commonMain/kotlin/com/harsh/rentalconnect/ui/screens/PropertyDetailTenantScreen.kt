@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,10 +14,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.harsh.rentalconnect.ui.models.TenantOwnerInfo
 import com.harsh.rentalconnect.ui.models.TenantPropertyDetail
 import com.harsh.rentalconnect.ui.theme.AppRadius
@@ -140,18 +145,39 @@ fun PropertyDetailTenantScreen(
             // ----------------------------------------------------------------
             // Image carousel placeholder
             // ----------------------------------------------------------------
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(AppSize.propertyImageLg)
-                    .background(PrimarySubtle),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(Res.string.property_detail_tenant_image_placeholder),
-                    color = Primary,
-                    style = RentalConnectTheme.typography.bodyMedium,
-                )
+            if (property.photoUrls.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(AppSize.propertyImageLg)
+                        .background(PrimarySubtle),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.property_detail_tenant_image_placeholder),
+                        color = Primary,
+                        style = RentalConnectTheme.typography.bodyMedium,
+                    )
+                }
+            } else {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = AppSpacing.xl),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.md),
+                ) {
+                    itemsIndexed(property.photoUrls) { index, photoUrl ->
+                        AsyncImage(
+                            model = photoUrl,
+                            contentDescription = "Rental photo ${index + 1}",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillParentMaxWidth()
+                                .height(AppSize.propertyImageLg)
+                                .clip(RoundedCornerShape(AppRadius.md))
+                                .background(PrimarySubtle),
+                        )
+                    }
+                }
             }
 
             // Pagination dots
@@ -162,7 +188,7 @@ fun PropertyDetailTenantScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                repeat(4) { index ->
+                repeat(maxOf(property.photoUrls.size, 1)) { index ->
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 3.dp)
@@ -452,6 +478,7 @@ fun PropertyDetailTenantScreenPreview() {
                 flatNumber = "Flat 2A",
                 type = "2BHK Apartment",
                 houseNumber = "HNO-14B",
+                photoUrls = listOf("https://images.unsplash.com/photo-1460317442991-0ec209397118"),
             ),
             owner = TenantOwnerInfo(
                 name = "Rajesh Kumar",

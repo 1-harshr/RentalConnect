@@ -2,9 +2,12 @@ package com.harsh.rentalconnect.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.harsh.rentalconnect.domain.model.AuthUser
+import com.harsh.rentalconnect.domain.repository.PropertyRepository
 import com.harsh.rentalconnect.domain.usecase.GetPropertiesUseCase
 import com.harsh.rentalconnect.ui.models.OwnerStats
 import com.harsh.rentalconnect.ui.models.PropertySummary
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -23,15 +26,21 @@ sealed class OwnerHomeUiState {
 }
 
 class OwnerHomeViewModel(
+    propertyRepository: PropertyRepository,
     getProperties: GetPropertiesUseCase,
-    private val ownerName: String = "Rajesh Kumar",
+    currentUser: AuthUser,
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            propertyRepository.refreshProperties(currentUser.id)
+        }
+    }
 
-    val uiState: StateFlow<OwnerHomeUiState> = getProperties()
+    val uiState: StateFlow<OwnerHomeUiState> = getProperties(currentUser.id)
         .map<_, OwnerHomeUiState> { properties ->
             OwnerHomeUiState.Success(
-                userName = ownerName,
-                userInitials = initials(ownerName),
+                userName = currentUser.name,
+                userInitials = initials(currentUser.name),
                 stats = OwnerStats(
                     propertyCount = properties.size,
                     tenantCount = properties.sumOf { it.tenantCount },

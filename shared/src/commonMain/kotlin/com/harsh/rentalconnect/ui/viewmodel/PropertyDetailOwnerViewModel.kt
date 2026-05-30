@@ -3,9 +3,11 @@ package com.harsh.rentalconnect.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.harsh.rentalconnect.domain.model.Tenant
+import com.harsh.rentalconnect.domain.repository.PropertyRepository
 import com.harsh.rentalconnect.domain.usecase.GetPropertyDetailUseCase
 import com.harsh.rentalconnect.ui.models.PropertyDetail
 import com.harsh.rentalconnect.ui.models.TenantSummary
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -20,8 +22,14 @@ sealed class PropertyDetailOwnerUiState {
 
 class PropertyDetailOwnerViewModel(
     propertyId: String,
+    propertyRepository: PropertyRepository,
     getPropertyDetail: GetPropertyDetailUseCase,
 ) : ViewModel() {
+    init {
+        viewModelScope.launch {
+            propertyRepository.refreshPropertyDetail(propertyId)
+        }
+    }
 
     val uiState: StateFlow<PropertyDetailOwnerUiState> = getPropertyDetail(propertyId)
         .map<_, PropertyDetailOwnerUiState> { (property, tenants) ->
@@ -36,6 +44,7 @@ class PropertyDetailOwnerViewModel(
                         type = property.type,
                         houseNumber = property.houseNumber,
                         isOccupied = property.isOccupied,
+                        photoUrls = property.photoUrls,
                         tenants = tenants.map { it.toSummary() },
                     )
                 )

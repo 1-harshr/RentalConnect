@@ -5,9 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,17 +15,27 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.harsh.rentalconnect.di.AppModule
+import com.harsh.rentalconnect.domain.model.AuthSession
+import com.harsh.rentalconnect.platform.openDialer
+import com.harsh.rentalconnect.platform.openMapQuery
+import com.harsh.rentalconnect.platform.openSms
+import com.harsh.rentalconnect.platform.rememberPropertyPhotoPicker
 import com.harsh.rentalconnect.ui.components.ErrorScreen
+import com.harsh.rentalconnect.ui.models.Role
+import com.harsh.rentalconnect.ui.screens.AccountScreen
 import com.harsh.rentalconnect.ui.screens.AddPropertyScreen
+import com.harsh.rentalconnect.ui.screens.AddTenantScreen
+import com.harsh.rentalconnect.ui.screens.EmptyStateScreen
 import com.harsh.rentalconnect.ui.screens.OnboardingScreen
 import com.harsh.rentalconnect.ui.screens.OwnerHomeScreen
-import com.harsh.rentalconnect.ui.screens.SignInScreen
 import com.harsh.rentalconnect.ui.screens.PropertyDetailOwnerScreen
 import com.harsh.rentalconnect.ui.screens.PropertyDetailTenantScreen
+import com.harsh.rentalconnect.ui.screens.SignInScreen
 import com.harsh.rentalconnect.ui.screens.TenantHomeScreen
 import com.harsh.rentalconnect.ui.screens.TenantProfileScreen
-import com.harsh.rentalconnect.ui.models.Role
+import com.harsh.rentalconnect.ui.viewmodel.AccountViewModel
 import com.harsh.rentalconnect.ui.viewmodel.AddPropertyViewModel
+import com.harsh.rentalconnect.ui.viewmodel.AddTenantViewModel
 import com.harsh.rentalconnect.ui.viewmodel.OnboardingViewModel
 import com.harsh.rentalconnect.ui.viewmodel.OwnerHomeUiState
 import com.harsh.rentalconnect.ui.viewmodel.OwnerHomeViewModel
@@ -36,24 +43,43 @@ import com.harsh.rentalconnect.ui.viewmodel.PropertyDetailOwnerUiState
 import com.harsh.rentalconnect.ui.viewmodel.PropertyDetailOwnerViewModel
 import com.harsh.rentalconnect.ui.viewmodel.PropertyDetailTenantUiState
 import com.harsh.rentalconnect.ui.viewmodel.PropertyDetailTenantViewModel
+import com.harsh.rentalconnect.ui.viewmodel.SignInViewModel
 import com.harsh.rentalconnect.ui.viewmodel.TenantHomeUiState
 import com.harsh.rentalconnect.ui.viewmodel.TenantHomeViewModel
 import com.harsh.rentalconnect.ui.viewmodel.TenantProfileUiState
 import com.harsh.rentalconnect.ui.viewmodel.TenantProfileViewModel
+import org.jetbrains.compose.resources.stringResource
+import rentalconnect.shared.generated.resources.Res
+import rentalconnect.shared.generated.resources.empty_secondary_action
+import rentalconnect.shared.generated.resources.empty_tenant_body
+import rentalconnect.shared.generated.resources.empty_tenant_title
 
 @Composable
 fun AppNavGraph(
+    session: AuthSession?,
+) {
+    when {
+        session == null -> AuthNavGraph()
+        session.user.role == Role.Owner -> OwnerNavGraph(session)
+        else -> TenantNavGraph(session)
+    }
+}
+
+@Composable
+private fun AuthNavGraph(
     navController: NavHostController = rememberNavController(),
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = AppRoute.Onboarding,
-    ) {
-
-        // ── Onboarding ────────────────────────────────────────────────────────
+    NavHost(navController = navController, startDestination = AppRoute.Onboarding) {
         composable<AppRoute.Onboarding> {
             val viewModel = viewModel {
-                OnboardingViewModel(AppModule.validateNameUseCase, AppModule.validatePhoneUseCase)
+                OnboardingViewModel(
+                    validateName = AppModule.validateNameUseCase,
+                    validatePhone = AppModule.validatePhoneUseCase,
+                    validateEmail = AppModule.validateEmailUseCase,
+                    validatePassword = AppModule.validatePasswordUseCase,
+                    validateAadhar = AppModule.validateAadharUseCase,
+                    authRepository = AppModule.authRepository,
+                )
             }
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -66,35 +92,49 @@ fun AppNavGraph(
                 name = uiState.name,
                 onNameChange = viewModel::onNameChange,
                 nameError = uiState.nameError,
+                email = uiState.email,
+                onEmailChange = viewModel::onEmailChange,
+                emailError = uiState.emailError,
+                password = uiState.password,
+                onPasswordChange = viewModel::onPasswordChange,
+                passwordError = uiState.passwordError,
+                confirmPassword = uiState.confirmPassword,
+                onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+                confirmPasswordError = uiState.confirmPasswordError,
+                hometown = uiState.hometown,
+                onHometownChange = viewModel::onHometownChange,
+                hometownError = uiState.hometownError,
+                aadharId = uiState.aadharId,
+                onAadharChange = viewModel::onAadharChange,
+                aadharError = uiState.aadharError,
+                authError = uiState.authError,
+                isSubmitting = uiState.isSubmitting,
                 canContinue = uiState.canContinue,
-                onContinue = {
-                    if (viewModel.onContinueAttempted()) {
-                        if (uiState.selectedRole == Role.Owner) {
-                            navController.navigate(AppRoute.OwnerHome) {
-                                popUpTo(AppRoute.Onboarding) { inclusive = true }
-                            }
-                        } else {
-                            navController.navigate(AppRoute.TenantHome) {
-                                popUpTo(AppRoute.Onboarding) { inclusive = true }
-                            }
-                        }
-                    }
-                },
+                onContinue = viewModel::submit,
                 onSignIn = { navController.navigate(AppRoute.SignIn) },
             )
         }
 
-        // ── Sign In ───────────────────────────────────────────────────────────
         composable<AppRoute.SignIn> {
-            var email by remember { mutableStateOf("") }
-            var password by remember { mutableStateOf("") }
+            val viewModel = viewModel {
+                SignInViewModel(
+                    authRepository = AppModule.authRepository,
+                    validateEmail = AppModule.validateEmailUseCase,
+                    validatePassword = AppModule.validatePasswordUseCase,
+                )
+            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
             SignInScreen(
-                email = email,
-                onEmailChange = { email = it },
-                password = password,
-                onPasswordChange = { password = it },
-                onSignIn = { /* TODO: call auth */ },
+                email = uiState.email,
+                onEmailChange = viewModel::onEmailChange,
+                emailError = uiState.emailError,
+                password = uiState.password,
+                onPasswordChange = viewModel::onPasswordChange,
+                passwordError = uiState.passwordError,
+                authError = uiState.authError,
+                isSubmitting = uiState.isSubmitting,
+                onSignIn = viewModel::submit,
                 onCreateAccount = {
                     navController.navigate(AppRoute.Onboarding) {
                         popUpTo(AppRoute.SignIn) { inclusive = true }
@@ -102,10 +142,23 @@ fun AppNavGraph(
                 },
             )
         }
+    }
+}
 
-        // ── Owner: Home ───────────────────────────────────────────────────────
+@Composable
+private fun OwnerNavGraph(
+    session: AuthSession,
+    navController: NavHostController = rememberNavController(),
+) {
+    NavHost(navController = navController, startDestination = AppRoute.OwnerHome) {
         composable<AppRoute.OwnerHome> {
-            val viewModel = viewModel { OwnerHomeViewModel(AppModule.getPropertiesUseCase) }
+            val viewModel = viewModel {
+                OwnerHomeViewModel(
+                    propertyRepository = AppModule.propertyRepository,
+                    getProperties = AppModule.getPropertiesUseCase,
+                    currentUser = session.user,
+                )
+            }
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
             when (val state = uiState) {
@@ -119,32 +172,42 @@ fun AppNavGraph(
                     selectedTab = 0,
                     onTabSelected = { tab ->
                         when (tab) {
-                            1 -> state.properties.firstOrNull()?.let { first ->
-                                navController.navigate(AppRoute.PropertyDetailOwner(first.id)) {
-                                    launchSingleTop = true
+                            1, 2 -> {
+                                val firstProperty = state.properties.firstOrNull()
+                                if (firstProperty == null) {
+                                    navController.navigate(AppRoute.AddProperty)
+                                } else {
+                                    navController.navigate(AppRoute.PropertyDetailOwner(firstProperty.id))
                                 }
                             }
-                            else -> Unit
+                            3 -> navController.navigate(AppRoute.Account)
                         }
                     },
                     onSeeAllProperties = {
-                        state.properties.firstOrNull()?.let { first ->
-                            navController.navigate(AppRoute.PropertyDetailOwner(first.id))
+                        val firstProperty = state.properties.firstOrNull()
+                        if (firstProperty == null) {
+                            navController.navigate(AppRoute.AddProperty)
+                        } else {
+                            navController.navigate(AppRoute.PropertyDetailOwner(firstProperty.id))
                         }
                     },
                     onPropertyClick = { propertyId ->
                         navController.navigate(AppRoute.PropertyDetailOwner(propertyId))
                     },
-                    onAvatarClick = { /* TODO: owner profile */ },
+                    onAddProperty = { navController.navigate(AppRoute.AddProperty) },
+                    onAvatarClick = { navController.navigate(AppRoute.Account) },
                 )
             }
         }
 
-        // ── Owner: Property Detail ────────────────────────────────────────────
         composable<AppRoute.PropertyDetailOwner> { backStackEntry ->
             val route: AppRoute.PropertyDetailOwner = backStackEntry.toRoute()
             val viewModel = viewModel {
-                PropertyDetailOwnerViewModel(route.propertyId, AppModule.getPropertyDetailUseCase)
+                PropertyDetailOwnerViewModel(
+                    propertyId = route.propertyId,
+                    propertyRepository = AppModule.propertyRepository,
+                    getPropertyDetail = AppModule.getPropertyDetailUseCase,
+                )
             }
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -156,16 +219,13 @@ fun AppNavGraph(
                     selectedTab = 1,
                     onTabSelected = { tab ->
                         when (tab) {
-                            0 -> navController.navigate(AppRoute.OwnerHome) {
-                                popUpTo(AppRoute.OwnerHome) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                            else -> Unit
+                            0 -> navController.popBackStack(AppRoute.OwnerHome, false)
+                            3 -> navController.navigate(AppRoute.Account)
                         }
                     },
-                    onEditClick = { /* TODO: edit property */ },
-                    onViewOnMap = { /* TODO: open map */ },
-                    onAddTenant = { /* TODO: add tenant flow */ },
+                    onEditClick = { navController.navigate(AppRoute.EditProperty(route.propertyId)) },
+                    onViewOnMap = { openMapQuery(state.property.address) },
+                    onAddTenant = { navController.navigate(AppRoute.AddTenant(route.propertyId)) },
                     onTenantClick = { tenantId ->
                         navController.navigate(
                             AppRoute.TenantProfile(
@@ -179,11 +239,14 @@ fun AppNavGraph(
             }
         }
 
-        // ── Owner: Tenant Profile ─────────────────────────────────────────────
         composable<AppRoute.TenantProfile> { backStackEntry ->
             val route: AppRoute.TenantProfile = backStackEntry.toRoute()
             val viewModel = viewModel {
-                TenantProfileViewModel(route.tenantId, AppModule.getTenantDetailUseCase)
+                TenantProfileViewModel(
+                    tenantId = route.tenantId,
+                    getTenantDetail = AppModule.getTenantDetailUseCase,
+                    tenantRepository = AppModule.tenantRepository,
+                )
             }
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -195,57 +258,197 @@ fun AppNavGraph(
                     selectedTab = 2,
                     onTabSelected = { tab ->
                         when (tab) {
-                            0 -> navController.navigate(AppRoute.OwnerHome) {
-                                popUpTo(AppRoute.OwnerHome) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                            1 -> navController.navigate(AppRoute.PropertyDetailOwner(route.propertyId)) {
-                                popUpTo(AppRoute.PropertyDetailOwner(route.propertyId)) {
-                                    inclusive = false
-                                }
-                                launchSingleTop = true
-                            }
-                            else -> Unit
+                            0 -> navController.popBackStack(AppRoute.OwnerHome, false)
+                            1 -> navController.popBackStack(AppRoute.PropertyDetailOwner(route.propertyId), false)
+                            3 -> navController.navigate(AppRoute.Account)
                         }
                     },
                     onRemove = { navController.popBackStack() },
-                    onCallPhone = { /* TODO: dial intent */ },
-                    onCallTenant = { /* TODO: dial intent */ },
-                    onRemoveTenant = { navController.popBackStack() },
+                    onCallPhone = { openDialer(state.tenant.phone) },
+                    onCallTenant = { openDialer(state.tenant.phone) },
+                    onRemoveTenant = { viewModel.removeTenant { navController.popBackStack() } },
                     onBackClick = { navController.popBackStack() },
                 )
             }
         }
 
-        // ── Owner: Add Property ───────────────────────────────────────────────
         composable<AppRoute.AddProperty> {
-            val viewModel = viewModel { AddPropertyViewModel() }
+            val viewModel = viewModel {
+                AddPropertyViewModel(
+                    propertyRepository = AppModule.propertyRepository,
+                    addProperty = AppModule.addPropertyUseCase,
+                    updateProperty = AppModule.updatePropertyUseCase,
+                    currentUser = session.user,
+                )
+            }
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val photoPicker = rememberPropertyPhotoPicker(
+                onPhotosPicked = viewModel::uploadPickedPhotos,
+                onError = viewModel::onPhotoUploadError,
+            )
 
             AddPropertyScreen(
+                isEditMode = false,
                 propertyName = uiState.propertyName,
                 onPropertyNameChange = viewModel::onPropertyNameChange,
+                propertyNameError = uiState.propertyNameError,
                 houseNumber = uiState.houseNumber,
                 onHouseNumberChange = viewModel::onHouseNumberChange,
+                houseNumberError = uiState.houseNumberError,
                 fullAddress = uiState.fullAddress,
                 onFullAddressChange = viewModel::onFullAddressChange,
+                fullAddressError = uiState.fullAddressError,
                 type = uiState.type,
                 onTypeChange = viewModel::onTypeChange,
+                typeError = uiState.typeError,
+                photoUrlInput = uiState.photoUrlInput,
+                onPhotoUrlInputChange = viewModel::onPhotoUrlInputChange,
+                photoUrls = uiState.photoUrls,
+                loadError = uiState.loadError,
+                isUploadingPhotos = uiState.isUploadingPhotos,
+                photoUploadError = uiState.photoUploadError,
+                onDismissPhotoUploadError = viewModel::onPhotoUploadErrorDismissed,
+                onAddPhotoUrl = viewModel::addPhotoUrl,
+                onRemovePhotoUrl = viewModel::removePhotoUrl,
                 isOccupied = uiState.isOccupied,
                 onAvailabilityChange = viewModel::onAvailabilityChange,
-                onAddPhotos = { /* TODO: media picker */ },
-                onTapToPin = { /* TODO: map picker */ },
+                isSaving = uiState.isSaving,
+                onAddPhotos = photoPicker,
+                onTapToPin = {},
                 onSave = { viewModel.save { navController.popBackStack() } },
                 onBackClick = { navController.popBackStack() },
             )
         }
 
-        // ── Tenant: Home ──────────────────────────────────────────────────────
+        composable<AppRoute.EditProperty> { backStackEntry ->
+            val route: AppRoute.EditProperty = backStackEntry.toRoute()
+            val viewModel = viewModel {
+                AddPropertyViewModel(
+                    propertyRepository = AppModule.propertyRepository,
+                    addProperty = AppModule.addPropertyUseCase,
+                    updateProperty = AppModule.updatePropertyUseCase,
+                    currentUser = session.user,
+                    propertyId = route.propertyId,
+                )
+            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            val photoPicker = rememberPropertyPhotoPicker(
+                onPhotosPicked = viewModel::uploadPickedPhotos,
+                onError = viewModel::onPhotoUploadError,
+            )
+
+            AddPropertyScreen(
+                isEditMode = true,
+                propertyName = uiState.propertyName,
+                onPropertyNameChange = viewModel::onPropertyNameChange,
+                propertyNameError = uiState.propertyNameError,
+                houseNumber = uiState.houseNumber,
+                onHouseNumberChange = viewModel::onHouseNumberChange,
+                houseNumberError = uiState.houseNumberError,
+                fullAddress = uiState.fullAddress,
+                onFullAddressChange = viewModel::onFullAddressChange,
+                fullAddressError = uiState.fullAddressError,
+                type = uiState.type,
+                onTypeChange = viewModel::onTypeChange,
+                typeError = uiState.typeError,
+                photoUrlInput = uiState.photoUrlInput,
+                onPhotoUrlInputChange = viewModel::onPhotoUrlInputChange,
+                photoUrls = uiState.photoUrls,
+                loadError = uiState.loadError,
+                isUploadingPhotos = uiState.isUploadingPhotos,
+                photoUploadError = uiState.photoUploadError,
+                onDismissPhotoUploadError = viewModel::onPhotoUploadErrorDismissed,
+                onAddPhotoUrl = viewModel::addPhotoUrl,
+                onRemovePhotoUrl = viewModel::removePhotoUrl,
+                isOccupied = uiState.isOccupied,
+                onAvailabilityChange = viewModel::onAvailabilityChange,
+                isSaving = uiState.isSaving,
+                onAddPhotos = photoPicker,
+                onTapToPin = {},
+                onSave = { viewModel.save { navController.popBackStack() } },
+                onBackClick = { navController.popBackStack() },
+            )
+        }
+
+        composable<AppRoute.AddTenant> { backStackEntry ->
+            val route: AppRoute.AddTenant = backStackEntry.toRoute()
+            val viewModel = viewModel {
+                AddTenantViewModel(
+                    propertyId = route.propertyId,
+                    authRepository = AppModule.authRepository,
+                    tenantRepository = AppModule.tenantRepository,
+                    validatePhone = AppModule.validatePhoneUseCase,
+                )
+            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+            AddTenantScreen(
+                phone = uiState.phone,
+                phoneError = uiState.phoneError,
+                candidate = uiState.candidate,
+                searchError = uiState.searchError,
+                isSearching = uiState.isSearching,
+                isConfirming = uiState.isConfirming,
+                onPhoneChange = viewModel::onPhoneChange,
+                onSearch = viewModel::search,
+                onConfirm = { viewModel.confirm { navController.popBackStack() } },
+                onBack = { navController.popBackStack() },
+            )
+        }
+
+        composable<AppRoute.Account> {
+            val viewModel = viewModel {
+                AccountViewModel(
+                    authRepository = AppModule.authRepository,
+                    validateName = AppModule.validateNameUseCase,
+                    validatePhone = AppModule.validatePhoneUseCase,
+                    validateAadhar = AppModule.validateAadharUseCase,
+                )
+            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            uiState.session?.let { sessionState ->
+                AccountScreen(
+                    userName = uiState.draftName,
+                    userEmail = sessionState.user.email,
+                    userPhone = uiState.draftPhone,
+                    userHometown = uiState.draftHometown,
+                    userAadharId = uiState.draftAadharId,
+                    role = sessionState.user.role,
+                    isEditing = uiState.isEditing,
+                    isSaving = uiState.isSaving,
+                    nameError = uiState.nameError,
+                    phoneError = uiState.phoneError,
+                    hometownError = uiState.hometownError,
+                    aadharError = uiState.aadharError,
+                    saveError = uiState.saveError,
+                    onNameChange = viewModel::onNameChange,
+                    onPhoneChange = viewModel::onPhoneChange,
+                    onHometownChange = viewModel::onHometownChange,
+                    onAadharChange = viewModel::onAadharChange,
+                    onEdit = viewModel::startEditing,
+                    onCancel = viewModel::cancelEditing,
+                    onSave = viewModel::save,
+                    onSignOut = viewModel::signOut,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TenantNavGraph(
+    session: AuthSession,
+    navController: NavHostController = rememberNavController(),
+) {
+    NavHost(navController = navController, startDestination = AppRoute.TenantHome) {
         composable<AppRoute.TenantHome> {
             val viewModel = viewModel {
                 TenantHomeViewModel(
-                    getTenantDetail = AppModule.getTenantDetailUseCase,
-                    getPropertyDetail = AppModule.getPropertyDetailUseCase,
+                    currentUser = session.user,
+                    tenantRepository = AppModule.tenantRepository,
+                    propertyRepository = AppModule.propertyRepository,
+                    getTenantAssignments = AppModule.getTenantAssignmentsUseCase,
+                    getProperties = AppModule.getPropertiesUseCase,
                 )
             }
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -253,33 +456,43 @@ fun AppNavGraph(
             when (val state = uiState) {
                 is TenantHomeUiState.Loading -> LoadingScreen()
                 is TenantHomeUiState.Error -> ErrorScreen(message = state.message)
+                is TenantHomeUiState.Empty -> EmptyStateScreen(
+                    title = stringResource(Res.string.empty_tenant_title),
+                    body = stringResource(Res.string.empty_tenant_body),
+                    primaryActionLabel = stringResource(Res.string.empty_secondary_action),
+                    onPrimaryAction = { navController.navigate(AppRoute.Account) },
+                )
                 is TenantHomeUiState.Success -> TenantHomeScreen(
                     userName = state.userName,
                     userInitials = state.userInitials,
-                    property = state.property,
-                    owner = state.owner,
+                    rentals = state.rentals,
                     selectedTab = 0,
                     onTabSelected = { tab ->
                         when (tab) {
-                            1 -> navController.navigate(AppRoute.PropertyDetailTenant) {
-                                launchSingleTop = true
+                            1 -> state.rentals.firstOrNull()?.let { rental ->
+                                navController.navigate(AppRoute.PropertyDetailTenant(rental.propertyId))
                             }
-                            else -> Unit
+                            2 -> navController.navigate(AppRoute.Account)
                         }
                     },
-                    onViewPropertyDetails = { navController.navigate(AppRoute.PropertyDetailTenant) },
-                    onCallOwner = { /* TODO: dial intent */ },
-                    onMessageOwner = { /* TODO: messaging */ },
-                    onAvatarClick = { /* TODO: tenant profile */ },
+                    onViewPropertyDetails = { propertyId ->
+                        navController.navigate(AppRoute.PropertyDetailTenant(propertyId))
+                    },
+                    onCallOwner = { phone -> openDialer(phone) },
+                    onAvatarClick = { navController.navigate(AppRoute.Account) },
                 )
             }
         }
 
-        // ── Tenant: Property Detail ───────────────────────────────────────────
-        composable<AppRoute.PropertyDetailTenant> {
+        composable<AppRoute.PropertyDetailTenant> { backStackEntry ->
+            val route: AppRoute.PropertyDetailTenant = backStackEntry.toRoute()
             val viewModel = viewModel {
                 PropertyDetailTenantViewModel(
-                    getTenantDetail = AppModule.getTenantDetailUseCase,
+                    propertyId = route.propertyId,
+                    currentUser = session.user,
+                    tenantRepository = AppModule.tenantRepository,
+                    propertyRepository = AppModule.propertyRepository,
+                    getTenantAssignments = AppModule.getTenantAssignmentsUseCase,
                     getPropertyDetail = AppModule.getPropertyDetailUseCase,
                 )
             }
@@ -294,16 +507,50 @@ fun AppNavGraph(
                     selectedTab = 1,
                     onTabSelected = { tab ->
                         when (tab) {
-                            0 -> navController.navigate(AppRoute.TenantHome) {
-                                popUpTo(AppRoute.TenantHome) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                            else -> Unit
+                            0 -> navController.popBackStack(AppRoute.TenantHome, false)
+                            2 -> navController.navigate(AppRoute.Account)
                         }
                     },
-                    onViewOnMap = { /* TODO: open map */ },
-                    onContactOwner = { /* TODO: dial intent */ },
+                    onViewOnMap = { openMapQuery(state.property.address) },
+                    onContactOwner = { openDialer(state.owner.phone) },
                     onBackClick = { navController.popBackStack() },
+                )
+            }
+        }
+
+        composable<AppRoute.Account> {
+            val viewModel = viewModel {
+                AccountViewModel(
+                    authRepository = AppModule.authRepository,
+                    validateName = AppModule.validateNameUseCase,
+                    validatePhone = AppModule.validatePhoneUseCase,
+                    validateAadhar = AppModule.validateAadharUseCase,
+                )
+            }
+            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+            uiState.session?.let { sessionState ->
+                AccountScreen(
+                    userName = uiState.draftName,
+                    userEmail = sessionState.user.email,
+                    userPhone = uiState.draftPhone,
+                    userHometown = uiState.draftHometown,
+                    userAadharId = uiState.draftAadharId,
+                    role = sessionState.user.role,
+                    isEditing = uiState.isEditing,
+                    isSaving = uiState.isSaving,
+                    nameError = uiState.nameError,
+                    phoneError = uiState.phoneError,
+                    hometownError = uiState.hometownError,
+                    aadharError = uiState.aadharError,
+                    saveError = uiState.saveError,
+                    onNameChange = viewModel::onNameChange,
+                    onPhoneChange = viewModel::onPhoneChange,
+                    onHometownChange = viewModel::onHometownChange,
+                    onAadharChange = viewModel::onAadharChange,
+                    onEdit = viewModel::startEditing,
+                    onCancel = viewModel::cancelEditing,
+                    onSave = viewModel::save,
+                    onSignOut = viewModel::signOut,
                 )
             }
         }

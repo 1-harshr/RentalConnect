@@ -108,6 +108,7 @@ fun OwnerHomeScreen(
     onTabSelected: (Int) -> Unit,
     onSeeAllProperties: () -> Unit,
     onPropertyClick: (String) -> Unit,
+    onAddProperty: () -> Unit,
     onAvatarClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -164,17 +165,26 @@ fun OwnerHomeScreen(
             }
 
             // Property cards
-            items(items = properties, key = { it.id }) { property ->
-                val colorIndex = properties.indexOf(property) % cardPlaceholderColors.size
-                PropertyCard(
-                    property = property,
-                    placeholderColor = cardPlaceholderColors[colorIndex],
-                    onClick = { onPropertyClick(property.id) },
-                    modifier = Modifier
-                        .padding(horizontal = AppSpacing.lg)
-                        .fillMaxWidth(),
-                )
-                Spacer(Modifier.height(AppSpacing.md))
+            if (properties.isEmpty()) {
+                item {
+                    EmptyPropertiesCard(
+                        onAddProperty = onAddProperty,
+                        modifier = Modifier.padding(horizontal = AppSpacing.lg),
+                    )
+                }
+            } else {
+                items(items = properties, key = { it.id }) { property ->
+                    val colorIndex = properties.indexOf(property) % cardPlaceholderColors.size
+                    PropertyCard(
+                        property = property,
+                        placeholderColor = cardPlaceholderColors[colorIndex],
+                        onClick = { onPropertyClick(property.id) },
+                        modifier = Modifier
+                            .padding(horizontal = AppSpacing.lg)
+                            .fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(AppSpacing.md))
+                }
             }
         }
     }
@@ -334,6 +344,42 @@ private fun PropertiesSectionHeader(
             color = Primary,
             modifier = Modifier.clickable(onClick = onSeeAll),
         )
+    }
+}
+
+@Composable
+private fun EmptyPropertiesCard(
+    onAddProperty: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppRadius.md),
+        colors = CardDefaults.cardColors(containerColor = Surface),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppSpacing.lg),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.sm),
+        ) {
+            Text(
+                text = "No properties yet",
+                style = RentalConnectTheme.typography.titleMedium,
+                color = OnSurface,
+            )
+            Text(
+                text = "Add your first property to start tracking tenants and occupancy.",
+                style = RentalConnectTheme.typography.bodyMedium,
+                color = OnSurfaceVariant,
+            )
+            Text(
+                text = "Add property",
+                style = RentalConnectTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = Primary,
+                modifier = Modifier.clickable(onClick = onAddProperty),
+            )
+        }
     }
 }
 
@@ -526,6 +572,7 @@ fun OwnerHomeScreenPreview() {
             onTabSelected = {},
             onSeeAllProperties = {},
             onPropertyClick = {},
+            onAddProperty = {},
             onAvatarClick = {},
         )
     }

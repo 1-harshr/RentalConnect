@@ -31,14 +31,14 @@ internal object MockDataSource {
 
     val properties = listOf(
         Property(
-            id = "p1", name = "Sunrise Apartments",
+            id = "p1", ownerId = "owner-demo", name = "Sunrise Apartments",
             address = "14B, MG Road, Bengaluru 560001",
             type = "2BHK Apartment", houseNumber = "HNO-14B",
             isOccupied = true, tenantCount = 3,
             ownerName = "Rajesh Kumar", ownerPhone = "+91 99887 76655",
         ),
         Property(
-            id = "p2", name = "Green Villa",
+            id = "p2", ownerId = "owner-demo", name = "Green Villa",
             address = "22, Koramangala, Bengaluru 560034",
             type = "3BHK Apartment", houseNumber = "HNO-22",
             isOccupied = false, tenantCount = 0,

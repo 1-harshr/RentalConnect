@@ -6,4 +6,5 @@ data class TenantPropertyDetail(
     val flatNumber: String,
     val type: String,
     val houseNumber: String,
+    val photoUrls: List<String>,
 )

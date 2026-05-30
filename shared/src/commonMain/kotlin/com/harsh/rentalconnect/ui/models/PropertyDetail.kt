@@ -7,5 +7,6 @@ data class PropertyDetail(
     val type: String,
     val houseNumber: String,
     val isOccupied: Boolean,
+    val photoUrls: List<String>,
     val tenants: List<TenantSummary>,
 )

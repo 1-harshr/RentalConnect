@@ -26,6 +26,24 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Android tests: `./gradlew :shared:testAndroidHostTest`
 - iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
+### Supabase setup
+
+The shared app now expects runtime Supabase configuration through environment variables:
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+
+You can start from [.env.example](./.env.example).
+
+The current code assumes the V1 backend contract defined in [supabase/001_v1_schema.sql](./supabase/001_v1_schema.sql), including:
+
+- `public.users`
+- `public.properties`
+- `public.tenancies`
+- storage bucket `property-photos`
+
+When those env vars are missing, the app falls back to in-memory data so the UI still runs locally. When they are present, auth, property reads/writes, tenancy reads/writes, and refresh paths use the Supabase-backed gateway.
+
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
