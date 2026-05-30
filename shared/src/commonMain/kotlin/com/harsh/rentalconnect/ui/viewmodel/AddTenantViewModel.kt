@@ -3,9 +3,13 @@ package com.harsh.rentalconnect.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.harsh.rentalconnect.domain.model.AuthUser
+import com.harsh.rentalconnect.domain.model.ValidationError
+import com.harsh.rentalconnect.domain.model.ValidationResult
 import com.harsh.rentalconnect.domain.repository.AuthRepository
 import com.harsh.rentalconnect.domain.repository.TenantRepository
 import com.harsh.rentalconnect.domain.usecase.ValidatePhoneUseCase
+import com.harsh.rentalconnect.ui.components.CountryCode
+import com.harsh.rentalconnect.ui.components.countryCodes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +19,8 @@ import kotlinx.coroutines.launch
 
 data class AddTenantUiState(
     val phone: String = "",
-    val phoneError: String? = null,
+    val phoneError: ValidationError? = null,
+    val selectedCountryCode: CountryCode = countryCodes.first(),
     val candidate: AuthUser? = null,
     val searchError: String? = null,
     val isSearching: Boolean = false,
@@ -35,17 +40,25 @@ class AddTenantViewModel(
         _uiState.update { it.copy(phone = value, phoneError = null, searchError = null, candidate = null) }
     }
 
+    fun onCountryCodeChange(countryCode: CountryCode) {
+        val error = if (_uiState.value.phone.isNotEmpty()) {
+            (validatePhone(_uiState.value.phone, countryCode.dialCode) as? ValidationResult.Invalid)?.error
+        } else null
+        _uiState.update { it.copy(selectedCountryCode = countryCode, phoneError = error) }
+    }
+
     fun search() {
         val phone = _uiState.value.phone
-        val valid = validatePhone(phone)
-        if (valid !is com.harsh.rentalconnect.domain.model.ValidationResult.Valid) {
-            _uiState.update { it.copy(phoneError = "Enter a valid 10-digit phone number") }
+        val dialCode = _uiState.value.selectedCountryCode.dialCode
+        val error = (validatePhone(phone, dialCode) as? ValidationResult.Invalid)?.error
+        if (error != null) {
+            _uiState.update { it.copy(phoneError = error) }
             return
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSearching = true, searchError = null, candidate = null) }
-            val candidate = authRepository.findTenantByPhone(phone)
+            val candidate = authRepository.findTenantByPhone("$dialCode$phone")
             if (candidate == null) {
                 _uiState.update { it.copy(isSearching = false, searchError = "No tenant account found for that phone number.") }
                 return@launch

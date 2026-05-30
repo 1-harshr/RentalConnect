@@ -6,14 +6,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,15 +20,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import com.harsh.rentalconnect.domain.model.AuthUser
+import com.harsh.rentalconnect.domain.model.ValidationError
+import com.harsh.rentalconnect.ui.components.CountryCode
+import com.harsh.rentalconnect.ui.components.PhoneInputField
 import com.harsh.rentalconnect.ui.theme.AppRadius
 import com.harsh.rentalconnect.ui.theme.AppSpacing
 import com.harsh.rentalconnect.ui.theme.Background
 import com.harsh.rentalconnect.ui.theme.Error
 import com.harsh.rentalconnect.ui.theme.OnSurface
 import com.harsh.rentalconnect.ui.theme.OnSurfaceVariant
-import com.harsh.rentalconnect.ui.theme.OutlineSubtle
 import com.harsh.rentalconnect.ui.theme.Primary
 import com.harsh.rentalconnect.ui.theme.RentalConnectTheme
 import com.harsh.rentalconnect.ui.theme.Surface
@@ -46,12 +44,16 @@ import rentalconnect.shared.generated.resources.add_tenant_search
 import rentalconnect.shared.generated.resources.add_tenant_searching
 import rentalconnect.shared.generated.resources.add_tenant_title
 import rentalconnect.shared.generated.resources.cd_back
+import rentalconnect.shared.generated.resources.error_phone_empty
+import rentalconnect.shared.generated.resources.error_phone_invalid_format
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTenantScreen(
     phone: String,
-    phoneError: String?,
+    phoneError: ValidationError?,
+    selectedCountryCode: CountryCode,
+    onCountryCodeChange: (CountryCode) -> Unit,
     candidate: AuthUser?,
     searchError: String?,
     isSearching: Boolean,
@@ -85,24 +87,16 @@ fun AddTenantScreen(
                 style = RentalConnectTheme.typography.bodyMedium,
                 color = OnSurfaceVariant,
             )
-            OutlinedTextField(
+            PhoneInputField(
+                label = stringResource(Res.string.add_tenant_phone_label),
                 value = phone,
                 onValueChange = onPhoneChange,
+                selectedCountryCode = selectedCountryCode,
+                onCountryCodeChange = onCountryCodeChange,
                 isError = phoneError != null,
-                label = { Text(stringResource(Res.string.add_tenant_phone_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary,
-                    unfocusedBorderColor = OutlineSubtle,
-                    errorBorderColor = Error,
-                    focusedContainerColor = Surface,
-                    unfocusedContainerColor = Surface,
-                ),
+                errorMessage = phoneError?.let { phoneErrorMessage(it) },
                 modifier = Modifier.fillMaxWidth(),
             )
-            if (phoneError != null) {
-                Text(phoneError, color = Error, style = RentalConnectTheme.typography.bodySmall)
-            }
             Button(
                 onClick = onSearch,
                 enabled = !isSearching,
@@ -147,4 +141,12 @@ fun AddTenantScreen(
             }
         }
     }
+}
+
+@Composable
+private fun phoneErrorMessage(error: ValidationError): String = when (error) {
+    ValidationError.EMPTY -> stringResource(Res.string.error_phone_empty)
+    ValidationError.TOO_SHORT,
+    ValidationError.TOO_LONG,
+    ValidationError.INVALID_FORMAT -> stringResource(Res.string.error_phone_invalid_format)
 }
